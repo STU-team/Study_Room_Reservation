@@ -12,11 +12,11 @@
 <XPD:ATTR name="Author" type="string">易雨杰、叶梅冰</XPD:ATTR>
 <XPD:ATTR name="#OwnedElements" type="integer">1</XPD:ATTR>
 <XPD:OBJ name="OwnedElements[0]" type="UMLModel" guid="9VCQ/b4aUESw9qRMQce0RQAA">
-<XPD:ATTR name="Name" type="string">CIM业务建模</XPD:ATTR>
+<XPD:ATTR name="Name" type="string">CIM-1 系统用例模型</XPD:ATTR>
 <XPD:REF name="Namespace">DQH6tNaa/kCDvrZAEZ72egAA</XPD:REF>
 <XPD:ATTR name="#OwnedDiagrams" type="integer">1</XPD:ATTR>
 <XPD:OBJ name="OwnedDiagrams[0]" type="UMLUseCaseDiagram" guid="94Xt3K/UgU+x4m2YmpOhTwAA">
-<XPD:ATTR name="Name" type="string">CIM1_业务用例图</XPD:ATTR>
+<XPD:ATTR name="Name" type="string">CIM1_系统用例图</XPD:ATTR>
 <XPD:REF name="DiagramOwner">9VCQ/b4aUESw9qRMQce0RQAA</XPD:REF>
 <XPD:OBJ name="DiagramView" type="UMLUseCaseDiagramView" guid="MxsCjrQvekek0FJW74hjKQAA">
 <XPD:REF name="Diagram">94Xt3K/UgU+x4m2YmpOhTwAA</XPD:REF>
@@ -61,7 +61,7 @@
 <XPD:OBJ name="NameCompartment" type="UMLNameCompartmentView" guid="Z4Q7jT5/mUypfmM8VXqUXQAA">
 <XPD:OBJ name="NameLabel" type="LabelView" guid="9PHcizNgZ0KNxTYRP16lCwAA">
 <XPD:ATTR name="FontStyle" type="integer">1</XPD:ATTR>
-<XPD:ATTR name="Text" type="string">前台员工</XPD:ATTR>
+<XPD:ATTR name="Text" type="string">前台</XPD:ATTR>
 </XPD:OBJ>
 <XPD:OBJ name="StereotypeLabel" type="LabelView" guid="mOsTigwjK0KlNUzGhuOplwAA">
 <XPD:ATTR name="Visible" type="boolean">False</XPD:ATTR>
@@ -602,7 +602,7 @@
 <XPD:REF name="Associations[0]">k2Vxo74lqE6GrKfJS2s/rwAA</XPD:REF>
 </XPD:OBJ>
 <XPD:OBJ name="OwnedElements[4]" type="UMLActor" guid="sC8yW+Ln8EOMV4m5svAIlgAA">
-<XPD:ATTR name="Name" type="string">前台员工</XPD:ATTR>
+<XPD:ATTR name="Name" type="string">前台</XPD:ATTR>
 <XPD:REF name="Namespace">9VCQ/b4aUESw9qRMQce0RQAA</XPD:REF>
 <XPD:ATTR name="#Views" type="integer">3</XPD:ATTR>
 <XPD:REF name="Views[0]">lzrSRgnQ4EC/x5dMZvDz1wAA</XPD:REF>
