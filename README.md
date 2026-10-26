@@ -83,6 +83,8 @@ Hotel-Booking-System/
 | [接口契约](docs/contract/接口契约.md) | 前后端核心类名、方法签名约定 |
 | [工作记录](docs/工作记录.md) | 每次任务的过程记录（按实际完成人署名） |
 | [进度看板](docs/进度看板.md) | A/B 任务状态、产出与截图清单 |
+| [CIM 建模说明](docs/reports/CIM建模说明.md) | CIM-1/CIM-2 元素清单、分支条件与实验对应 |
+| [A-2 到 B-1 对接说明](docs/contract/对接-A2到B1.md) | 交给成员B 的实验2 输入、命名约定与回传时间 |
 
 ## 七、Git 协同规范
 
