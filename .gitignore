@@ -22,3 +22,29 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Maven 构建产物
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.classpath
+*.project
+.settings/
+
+# 操作系统
+Thumbs.db
+.DS_Store
+
+# 课程资料（老师提供的指导书/教材/他人报告），本地保存于 E:\CST9301-课程资料，不入库
+CST9301-*.doc
+UML2.0实战教程*.pdf
+uml基础教程.ppt
+系统分析师UML实务手册*.pdf
+20*_*_assignsubmission_file_*.pdf
+
+# StarUML 备份文件
+*.~ml
