@@ -1,4 +1,4 @@
-# Study-Room-Reservation
+# Study_Room_Reservation
 
 > **文件作用**：项目总览与开发入口说明，包含项目目标、目录结构、构建方式、文档索引与 Git 协同规范。
 > **课程**：CST9301 软件工程（汕头大学）
@@ -48,7 +48,7 @@
 ## 五、目录结构
 
 ```text
-Study-Room-Reservation/
+Study_Room_Reservation/
 ├── pom.xml                     # Maven 构建配置
 ├── mvnw / mvnw.cmd             # Maven Wrapper
 ├── README.md                   # 项目总览（本文件）
