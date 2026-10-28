@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.hotel</groupId>
-    <artifactId>hotel-booking-system</artifactId>
+    <groupId>com.studyroom</groupId>
+    <artifactId>study-room-reservation</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
 
-    <name>Hotel-Booking-System</name>
-    <description>CST9301 软件工程课程设计：酒店订房管理子系统（Java Swing）</description>
+    <name>Study-Room-Reservation</name>
+    <description>CST9301 软件工程课程设计：自习室预约管理子系统（Java Swing）</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
