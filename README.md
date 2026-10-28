@@ -2,7 +2,7 @@
 
 > **文件作用**：项目总览与开发入口说明，包含项目目标、目录结构、构建方式、文档索引与 Git 协同规范。
 > **课程**：CST9301 软件工程（汕头大学）
-> **仓库**：https://github.com/yyj138/Hotel-Booking-System （待改名为 Study-Room-Reservation）
+> **仓库**：https://github.com/yyj138/Study_Room_Reservation
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
 > **当前版本**：v0.4（选题切换为自习室预约系统，文档与契约同步更新）
