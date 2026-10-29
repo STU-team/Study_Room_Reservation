@@ -48,3 +48,6 @@ uml基础教程.ppt
 
 # StarUML 备份文件
 *.~ml
+
+# Word 临时文件
+~$*.docx
