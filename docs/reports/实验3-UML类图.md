@@ -82,7 +82,7 @@
 | Student | phone | String | 联系电话 |
 | Student | creditScore | Integer | 信用分，爽约扣 5、超时扣 1、低于 80 禁约 |
 | SeatType | typeName | String | 区域名称，如「单人自习区」 |
-| SeatType | seatCount | Integer（derived） | 该类型座位总数，由 Seat 按 typeName 聚合派生，不单独存储 |
+| SeatType | seatCount | Integer（derived） | 该类型座位总数，由 Seat 按 typeName 聚合派生，不单独存储；M01 维护座位数量是通过增删 Seat 记录实现的，不是直接改这个字段 |
 | Seat | seatId | Long | 座位唯一编号 |
 | Seat | roomName | String | 所在房间名称 |
 | Seat | seatNo | String | 座位号，唯一标识 |
@@ -101,6 +101,7 @@
 | CheckinRecord | penalty | Integer | 本次扣减信用分，无扣分为 0 |
 | CreditScoreLog | logId | Long | 流水唯一编号 |
 | CreditScoreLog | studentId | String | 变动所属学生 |
+| CreditScoreLog | reservationId | String | 关联预约号，可空（管理员手工调整时为空），便于追溯到具体预约 |
 | CreditScoreLog | changeValue | Integer | 本次变动分值（扣分记负，加分记正） |
 | CreditScoreLog | reason | CreditChangeReason | 变动原因，取值为枚举 |
 | CreditScoreLog | createTime | Date | 变动发生时间 |
@@ -124,7 +125,7 @@
 | User | modifyInfo(): void | 修改本人资料 |
 | Seat | updateStatus(newStatus: SeatStatus): void | 更新座位状态；OCCUPIED 不得直接改 AVAILABLE，必须先签退 |
 | Reservation | cancel(): boolean | 主动取消预约，释放座位 |
-| Reservation | checkIn(): boolean | 学生签到，置为已签到 |
+| Reservation | checkIn(): boolean | 值班管理员在前台执行签到登记，置为已签到（Study-F01 操作者为值班管理员，不是学生自助） |
 | Reservation | checkOut(): boolean | 学生签退，释放座位，判定是否超时并扣分 |
 | Reservation | handleNoShow(): void | 超时未签到由系统判定爽约，状态置 NO_SHOW，释放座位、扣 5 分并写流水 |
 
@@ -182,7 +183,7 @@
 #### 3. SeatType（座位类型）
 
 - **职责**：描述一类座位及其规模，是 M01 维护规则时的操作对象。
-- **属性**：typeName、seatCount（派生属性，由 Seat 按 typeName 聚合统计，不单独持久化）。
+- **属性**：typeName、seatCount（派生属性，由 Seat 按 typeName 聚合统计，不单独持久化；M01 维护座位数量是通过增删 Seat 记录实现的，不是直接改 seatCount）。
 - **操作**：无业务操作。
 - **关联**：与 Seat 为聚合 1 : 0..*，空心菱形在 SeatType 端。
 - **支撑用例**：Study-M01 座位区域与规则维护、Study-C01 查询座位（按类型筛选）。
@@ -200,7 +201,7 @@
 
 - **职责**：保存一次预约的用户、座位、时段、签到截止时间与状态。
 - **属性**：reservationId、userId、seatId、createTime（提交时间）、startTime（预约开始）、endTime（预约结束）、signInDeadline、status。
-- **操作**：`cancel()` 主动取消；`checkIn()` 签到；`checkOut()` 签退并判定超时；`handleNoShow()` 超时未签到由系统自动置 NO_SHOW、释放座位、扣 5 分并写流水。
+- **操作**：`cancel()` 主动取消；`checkIn()` 值班管理员在前台执行签到登记；`checkOut()` 值班管理员执行签退并判定超时；`handleNoShow()` 超时未签到由后台系统自动置 NO_SHOW、释放座位、扣 5 分并写流水。
 - **关联**：与 User 为 0..* : 1；与 Seat 为 0..* : 1；与 CheckinRecord 为 1 : 0..1；依赖 ReservationStatus 枚举。
 - **状态流转**：BOOKED → CHECKED_IN（签到）→ CHECKED_OUT（签退）；BOOKED → CANCELLED（学生主动取消）；BOOKED → NO_SHOW（超时未签到，系统自动爽约）。
 - **支撑用例**：Study-C02、Study-C03、Study-F01、Study-F02、Study-M03。
@@ -216,7 +217,7 @@
 #### 7. CreditScoreLog（信用分变动流水）
 
 - **职责**：记录学生信用分的每一次增减，作为 M03「预约记录与信用分管理」里信用分流水的凭据；不直接改 Student.creditScore，由业务流程在改分数的同时写一条流水。
-- **属性**：logId、studentId、changeValue（扣分记负、加分记正）、reason、createTime。
+- **属性**：logId、studentId、reservationId（可空，管理员手工调整时为空，便于追溯到具体预约）、changeValue（扣分记负、加分记正）、reason、createTime。
 - **操作**：无业务操作，只作为流水记录。
 - **关联**：与 Student 为 0..* : 1；依赖 CreditChangeReason 枚举。
 - **支撑用例**：Study-M03 预约记录与信用分管理、Study-I03 超时扣分写流水。
@@ -242,9 +243,11 @@
 | Study-M03 | 预约记录与信用分管理 | Reservation、Student.creditScore、CreditScoreLog、CheckinRecord.penalty |
 | Study-I01 | 校验座位与时段可用性 | Seat.status、Reservation |
 | Study-I02 | 核验预约记录 | Reservation.status、ReservationId |
-| Study-I03 | 判定超时并记录信用分扣减 | Reservation.handleNoShow、CheckinRecord.penalty |
+| Study-I03 | 判定超时并记录信用分扣减 | Reservation.checkOut() 超时判定 + CreditScoreLog(LATE_CHECKOUT, -1) |
 
 > 说明：用例中的跨对象业务编排（如「列出某时段全部可用座位」「扫描全部超时未签到预约」）在本类图中体现为相关实体的协作；具体服务类（ReservationService / SeatService / AuthService）与 DAO 层将在 A-5、A-6 编码阶段补出，不在本业务类图展开，避免分析阶段过早引入技术分层。
+>
+> 爽约扣 5 分与上表 I03（签退超时扣 1 分）是两条独立链路：爽约扣 5 分由后台服务定时调用 `Reservation.handleNoShow()` 处理，把预约状态从 BOOKED 置为 NO_SHOW、释放座位，并写一条 `CreditScoreLog(NO_SHOW, -5)` 流水；签退超时扣 1 分由 `Reservation.checkOut()` 在 F02 流程内判定，写一条 `CreditScoreLog(LATE_CHECKOUT, -1)` 流水。
 
 ## 五、实验数据分析与讨论
 

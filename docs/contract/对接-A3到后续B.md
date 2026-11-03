@@ -28,7 +28,7 @@
 | Seat | seatId:Long、roomName:String、seatNo:String、status:SeatStatus | updateStatus(newStatus: SeatStatus):void |
 | Reservation | reservationId:Long、userId:Long、seatId:Long、createTime:Date、startTime:Date、endTime:Date、signInDeadline:Date、status:ReservationStatus | cancel():boolean、checkIn():boolean、checkOut():boolean、handleNoShow():void |
 | CheckinRecord | recordNo:String、actualStart:Date、actualEnd:Date、penalty:Integer | 无 |
-| CreditScoreLog | logId:Long、studentId:String、changeValue:Integer、reason:CreditChangeReason、createTime:Date | 无 |
+| CreditScoreLog | logId:Long、studentId:String、reservationId:String（可空，管理员手工调整时为空）、changeValue:Integer、reason:CreditChangeReason、createTime:Date | 无 |
 
 ### 4 个枚举
 
@@ -55,6 +55,9 @@
 2. **状态流转是否闭环**：SeatStatus 的 OCCUPIED 不能直接改 AVAILABLE，必须先签退（契约 v0.5 约束）；ReservationStatus 的 BOOKED -> CHECKED_IN -> CHECKED_OUT 主链路，BOOKED -> CANCELLED（学生主动取消），BOOKED -> NO_SHOW（系统爽约）三条分支。
 3. **枚举值是否齐全**：Role 三值、SeatStatus 四值、ReservationStatus 五值（含新增 NO_SHOW）、CreditChangeReason 三值，缺一个都会导致后续代码写死字符串。
 4. **信用分落点**：爽约扣 5、超时扣 1、低于 80 禁约、签到宽限 15 分钟——每次扣分都写一条 CreditScoreLog；规则参数在本类图上**没有**单独建 SystemConfig 类，而是放在 M01 维护用例里；B 若觉得有必要，可以在时序图里以参数对象形式出现。
+5. **两条扣分链路不要混**：I03（签退释放包含的"判定超时并扣分"）走 `Reservation.checkOut()`，写 `CreditScoreLog(LATE_CHECKOUT, -1)`；爽约扣 5 分不走 I03，由后台定时任务调 `Reservation.handleNoShow()`，把 BOOKED 直接置 NO_SHOW，写 `CreditScoreLog(NO_SHOW, -5)`。
+6. **checkIn 的操作者是值班管理员**：Study-F01 参与者是值班管理员在前台录入预约号登记，不是学生自助签到；B 画活动图和时序图时注意泳道是值班管理员。
+7. **seatCount 是派生属性**：M01 维护座位数量是通过增删 Seat 记录实现的，不是直接改 SeatType.seatCount；B 画 M01 活动图时注意这个动作落点。
 
 ## 四、对 B 后续工作的影响
 
