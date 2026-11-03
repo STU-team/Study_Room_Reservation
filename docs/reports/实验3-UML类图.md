@@ -1,6 +1,6 @@
 # 实验3　UML 类图
 
-> **课程**：CST9301 软件工程　｜　**版本**：v1.1（2026-11-03 按 StarUML 5.0 手画版类图对齐）
+> **课程**：CST9301 软件工程　｜　**版本**：v1.2（2026-11-04 按 B 评审意见调整：新增 CreditScoreLog 与 CreditChangeReason，ReservationStatus 加 NO_SHOW，Reservation 时段字段拆分）
 > **文件作用**：实验3 报告（Markdown 版），供 GitHub 在线浏览与团队协作；Word 版为提交用的最终版。两版内容一致。
 > **撰写**：易雨杰（成员A，2024611209）　｜　**评审**：叶梅冰（成员B，2024611038）
 
@@ -12,7 +12,7 @@
 | 系 | 计算机系 |
 | 专业 | 计算机科学与技术 |
 | 姓名 | 易雨杰（2024611209）、叶梅冰（2024611038） |
-| 实验时间 | 2026 年 11 月 3 日 |
+| 实验时间 | 2026 年 11 月 4 日 |
 | 实验题目 | 实验3　UML 类图 |
 | 成绩 | |
 
@@ -77,13 +77,12 @@
 | User | password | String | 登录密码 |
 | User | name | String | 用户姓名 |
 | User | role | Role | 角色，取值为枚举 |
-| User | score | Integer | 信用分，学生角色使用，初始 100 |
 | Student | studentId | String | 学号，唯一标识 |
 | Student | name | String | 学生姓名 |
 | Student | phone | String | 联系电话 |
 | Student | creditScore | Integer | 信用分，爽约扣 5、超时扣 1、低于 80 禁约 |
 | SeatType | typeName | String | 区域名称，如「单人自习区」 |
-| SeatType | seatCount | Integer | 该类型座位总数 |
+| SeatType | seatCount | Integer（derived） | 该类型座位总数，由 Seat 按 typeName 聚合派生，不单独存储 |
 | Seat | seatId | Long | 座位唯一编号 |
 | Seat | roomName | String | 所在房间名称 |
 | Seat | seatNo | String | 座位号，唯一标识 |
@@ -91,13 +90,20 @@
 | Reservation | reservationId | Long | 预约唯一编号 |
 | Reservation | userId | Long | 预约人编号 |
 | Reservation | seatId | Long | 预约座位编号 |
-| Reservation | reserveTime | Date | 预约时间 |
+| Reservation | createTime | Date | 预约提交时间 |
+| Reservation | startTime | Date | 预约开始时间 |
+| Reservation | endTime | Date | 预约结束时间 |
 | Reservation | signInDeadline | Date | 签到截止时间（预约开始 + 15 分钟） |
 | Reservation | status | ReservationStatus | 预约状态，取值为枚举 |
 | CheckinRecord | recordNo | String | 记录号，唯一标识 |
 | CheckinRecord | actualStart | Date | 实际签到时间 |
 | CheckinRecord | actualEnd | Date | 实际签退时间 |
 | CheckinRecord | penalty | Integer | 本次扣减信用分，无扣分为 0 |
+| CreditScoreLog | logId | Long | 流水唯一编号 |
+| CreditScoreLog | studentId | String | 变动所属学生 |
+| CreditScoreLog | changeValue | Integer | 本次变动分值（扣分记负，加分记正） |
+| CreditScoreLog | reason | CreditChangeReason | 变动原因，取值为枚举 |
+| CreditScoreLog | createTime | Date | 变动发生时间 |
 
 **状态与枚举补充**（对应指导书「补充该类动态属性，如状态」）：
 
@@ -105,7 +111,8 @@
 |---|---|---|
 | Role | STUDENT / DUTY_ADMIN / SYS_ADMIN | 学生 / 值班管理员 / 系统管理员 |
 | SeatStatus | AVAILABLE / RESERVED / OCCUPIED / CLOSED | 可用 / 已预约 / 使用中 / 维修关闭 |
-| ReservationStatus | BOOKED / CHECKED_IN / CHECKED_OUT / CANCELLED | 已预约 / 已签到 / 已签退 / 已取消 |
+| ReservationStatus | BOOKED / CHECKED_IN / CHECKED_OUT / CANCELLED / NO_SHOW | 已预约 / 已签到 / 已签退 / 已取消 / 爽约未签到 |
+| CreditChangeReason | NO_SHOW / LATE_CHECKOUT / OTHER | 爽约未签到扣 5 分 / 签退超时扣 1 分 / 其他调整（管理员手工加减分） |
 
 ### （三）类的操作与职责分配
 
@@ -115,16 +122,17 @@
 |---|---|---|
 | User | login(): boolean | 校验用户名密码，返回是否登录成功 |
 | User | modifyInfo(): void | 修改本人资料 |
-| Seat | updateStatus(): void | 更新座位状态 |
+| Seat | updateStatus(newStatus: SeatStatus): void | 更新座位状态；OCCUPIED 不得直接改 AVAILABLE，必须先签退 |
 | Reservation | cancel(): boolean | 主动取消预约，释放座位 |
 | Reservation | checkIn(): boolean | 学生签到，置为已签到 |
-| Reservation | handleNoShow(): void | 超时未签到由系统判定爽约，自动取消、释放座位、扣 5 分（契约 v0.5 新增） |
+| Reservation | checkOut(): boolean | 学生签退，释放座位，判定是否超时并扣分 |
+| Reservation | handleNoShow(): void | 超时未签到由系统判定爽约，状态置 NO_SHOW，释放座位、扣 5 分并写流水 |
 
 > 说明：`handleNoShow` 是接口契约 v0.5 相对 v0.4 的关键补充。如果只靠学生点取消或管理员点签退，学生既不签到也不取消时座位会被永久占用，因此必须有一个独立的爽约判定入口。
 
 ### （四）类间关系
 
-本图共 6 条业务关系 + 3 条枚举依赖，如下：
+本图共 6 条业务关系 + 4 条枚举依赖，如下：
 
 | 关系 | 两端 | 多重性 | 说明 |
 |---|---|---|---|
@@ -133,15 +141,17 @@
 | 关联 | Seat → Reservation | 1 : 0..* | 一个座位在不同时段可被多次预约；一条预约对应一个座位 |
 | 关联 | User → Student | 1 : 0..1 | 学生角色的登录账户对应一份学生档案；管理员账户无学生档案 |
 | 关联 | Reservation → CheckinRecord | 1 : 0..1 | 只有完成签到的预约才有签到签退记录 |
+| 关联 | Student → CreditScoreLog | 1 : 0..* | 一个学生有多条信用分变动流水；每条流水只属于一个学生 |
 | 依赖（虚线） | User → Role | — | User 的 role 属性引用 Role 枚举 |
 | 依赖（虚线） | Seat → SeatStatus | — | Seat 的 status 属性引用 SeatStatus 枚举 |
 | 依赖（虚线） | Reservation → ReservationStatus | — | Reservation 的 status 属性引用 ReservationStatus 枚举 |
+| 依赖（虚线） | CreditScoreLog → CreditChangeReason | — | CreditScoreLog 的 reason 属性引用 CreditChangeReason 枚举 |
 
 > 关于泛化：用例图中「学生／值班管理员／系统管理员」泛化到抽象参与者「用户」，这是参与者层次；在类图中三者合并为 `User` 类，用 `Role` 枚举区分权限，因此类图不出现类之间的泛化箭头。这是本次建模相对用例图的一个有意简化。
 
 ### （五）类图
 
-本图在 StarUML 5.0 中按上述 6 个业务类、3 个枚举、5 条关联（含 1 条聚合）、3 条依赖建模，工程文件为 `docs/uml/实验3_总类图.uml`，导出的图片为 `docs/assets/实验3_总类图.jpg`。
+本图在 StarUML 5.0 中按上述 7 个业务类、4 个枚举、6 条关联（含 1 条聚合）、4 条依赖建模，工程文件为 `docs/uml/实验3_总类图.uml`，导出的图片为 `docs/assets/实验3_总类图.jpg`。
 
 ![图3-1 自习室预约管理子系统总类图](../assets/实验3_总类图.jpg)
 
@@ -156,7 +166,7 @@
 #### 1. User（用户账户）
 
 - **职责**：保存系统登录账户，区分三种角色，承载登录与资料修改。
-- **属性**：userId、username、password、name、role、score。
+- **属性**：userId、username、password、name、role（不存信用分，信用分在 Student.creditScore）。
 - **操作**：`login()` 校验用户名密码；`modifyInfo()` 修改本人资料。
 - **关联**：与 Reservation 为 1 : 0..*；与 Student 为 1 : 0..1；依赖 Role 枚举。
 - **支撑用例**：Study-U01 登录、Study-C02 在线预约、Study-C03 取消预约。
@@ -166,13 +176,13 @@
 - **职责**：保存学生基本信息与信用分，是信用分扣分与禁约判定的落点。
 - **属性**：studentId、name、phone、creditScore。
 - **操作**：本类不绑方法，信用分校验在预约流程中由系统读取 creditScore 完成。
-- **关联**：与 User 为 0..1 : 1。
+- **关联**：与 User 为 0..1 : 1；与 CreditScoreLog 为 1 : 0..*（一个学生有多条信用分变动流水）。
 - **支撑用例**：Study-C02 在线预约（信用分校验）、Study-M03 预约记录与信用分管理。
 
 #### 3. SeatType（座位类型）
 
 - **职责**：描述一类座位及其规模，是 M01 维护规则时的操作对象。
-- **属性**：typeName、seatCount。
+- **属性**：typeName、seatCount（派生属性，由 Seat 按 typeName 聚合统计，不单独持久化）。
 - **操作**：无业务操作。
 - **关联**：与 Seat 为聚合 1 : 0..*，空心菱形在 SeatType 端。
 - **支撑用例**：Study-M01 座位区域与规则维护、Study-C01 查询座位（按类型筛选）。
@@ -181,7 +191,7 @@
 
 - **职责**：保存单个座位的编号、所在房间、类型与状态。
 - **属性**：seatId、roomName、seatNo、status。
-- **操作**：`updateStatus()` 更新座位状态。
+- **操作**：`updateStatus(newStatus: SeatStatus)` 更新座位状态，传入目标状态。
 - **关联**：与 SeatType 为 0..* : 1 聚合；与 Reservation 为 1 : 0..*；依赖 SeatStatus 枚举。
 - **状态流转**：AVAILABLE → RESERVED（预约成功）→ OCCUPIED（签到）→ AVAILABLE（签退释放）；任意状态 → CLOSED（转维修）；OCCUPIED 不得直接改为 AVAILABLE，必须先签退（契约 v0.5 约束）。
 - **支撑用例**：Study-C01、Study-C02、Study-F01、Study-F02、Study-M02。
@@ -189,10 +199,10 @@
 #### 5. Reservation（预约记录）
 
 - **职责**：保存一次预约的用户、座位、时段、签到截止时间与状态。
-- **属性**：reservationId、userId、seatId、reserveTime、signInDeadline、status。
-- **操作**：`cancel()` 主动取消；`checkIn()` 签到；`handleNoShow()` 超时未签到由系统自动取消并扣分。
+- **属性**：reservationId、userId、seatId、createTime（提交时间）、startTime（预约开始）、endTime（预约结束）、signInDeadline、status。
+- **操作**：`cancel()` 主动取消；`checkIn()` 签到；`checkOut()` 签退并判定超时；`handleNoShow()` 超时未签到由系统自动置 NO_SHOW、释放座位、扣 5 分并写流水。
 - **关联**：与 User 为 0..* : 1；与 Seat 为 0..* : 1；与 CheckinRecord 为 1 : 0..1；依赖 ReservationStatus 枚举。
-- **状态流转**：BOOKED → CHECKED_IN（签到）→ CHECKED_OUT（签退）；BOOKED → CANCELLED（取消或爽约）。
+- **状态流转**：BOOKED → CHECKED_IN（签到）→ CHECKED_OUT（签退）；BOOKED → CANCELLED（学生主动取消）；BOOKED → NO_SHOW（超时未签到，系统自动爽约）。
 - **支撑用例**：Study-C02、Study-C03、Study-F01、Study-F02、Study-M03。
 
 #### 6. CheckinRecord（签到签退记录）
@@ -203,11 +213,19 @@
 - **关联**：与 Reservation 为 0..1 : 1。
 - **支撑用例**：Study-F01、Study-F02、Study-M03。
 
-#### 7. Role / SeatStatus / ReservationStatus（枚举）
+#### 7. CreditScoreLog（信用分变动流水）
+
+- **职责**：记录学生信用分的每一次增减，作为 M03「预约记录与信用分管理」里信用分流水的凭据；不直接改 Student.creditScore，由业务流程在改分数的同时写一条流水。
+- **属性**：logId、studentId、changeValue（扣分记负、加分记正）、reason、createTime。
+- **操作**：无业务操作，只作为流水记录。
+- **关联**：与 Student 为 0..* : 1；依赖 CreditChangeReason 枚举。
+- **支撑用例**：Study-M03 预约记录与信用分管理、Study-I03 超时扣分写流水。
+
+#### 8. Role / SeatStatus / ReservationStatus / CreditChangeReason（枚举）
 
 - **职责**：替代大量布尔属性，把状态取值固定下来，防止出现非法状态字符串。
 - **取值**：见（二）状态与枚举补充。
-- **说明**：持久化时按英文常量名写入 CSV，与契约第八节一致。
+- **说明**：持久化时按英文常量名写入 CSV，与契约第八节一致；ReservationStatus 新增 NO_SHOW 与主动取消 CANCELLED 区分开，便于统计爽约率。
 
 ### （七）实验2 十二个用例到类的映射
 
@@ -221,7 +239,7 @@
 | Study-F02 | 签退释放 | Reservation、Seat.status、CheckinRecord |
 | Study-M01 | 座位区域与规则维护 | SeatType、Seat |
 | Study-M02 | 座位状态维护 | Seat.updateStatus、SeatStatus |
-| Study-M03 | 预约记录与信用分管理 | Reservation、Student.creditScore、CheckinRecord.penalty |
+| Study-M03 | 预约记录与信用分管理 | Reservation、Student.creditScore、CreditScoreLog、CheckinRecord.penalty |
 | Study-I01 | 校验座位与时段可用性 | Seat.status、Reservation |
 | Study-I02 | 核验预约记录 | Reservation.status、ReservationId |
 | Study-I03 | 判定超时并记录信用分扣减 | Reservation.handleNoShow、CheckinRecord.penalty |
@@ -242,9 +260,9 @@
 
 契约 v0.5 引入信用分后，类图上有三处必须同时对齐：
 
-1. **分存在哪里**：`User.score` 与 `Student.creditScore`。前者是账户级展示，后者是学生档案的权威值，学生预约时以 Student.creditScore 为准。
+1. **分存在哪里**：`Student.creditScore` 是当前权威分值；每一次增减都同步写一条 `CreditScoreLog` 流水（记录 studentId、changeValue、reason、createTime），M03 管理界面展示的就是这张流水表。User 类不存信用分，避免账户和学生档案两边数据不一致。
 2. **扣多少由谁决定**：爽约扣 5、超时扣 1、低于 80 禁约、签到宽限 15 分钟——这些参数在 M01 维护用例中集中配置，类图上不单独建配置类，避免分析阶段过度设计；编码阶段再抽到常量类。
-3. **爽约由谁触发**：`Reservation.handleNoShow()`。这是本实验相对 v0.4 的关键补充——如果只靠学生点「取消」或管理员点「签退」，学生既不签到也不取消时座位会被永久占用，所以必须有一个独立判定入口。
+3. **爽约由谁触发**：`Reservation.handleNoShow()`，执行后把预约状态从 BOOKED 直接置为 NO_SHOW（而不是 CANCELLED），释放座位、扣 5 分并写一条 reason=NO_SHOW 的 CreditScoreLog。把 NO_SHOW 从 CANCELLED 里独立出来，是为了后续能统计爽约率，而不会和学生主动取消混在一起。
 
 ### （三）分析类图与设计类图的边界
 
