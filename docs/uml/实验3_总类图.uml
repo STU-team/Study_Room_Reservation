@@ -875,7 +875,7 @@
 <XPD:ATTR name="Left" type="integer">307</XPD:ATTR>
 <XPD:ATTR name="Top" type="integer">636</XPD:ATTR>
 <XPD:ATTR name="Width" type="integer">160</XPD:ATTR>
-<XPD:ATTR name="Height" type="integer">108</XPD:ATTR>
+<XPD:ATTR name="Height" type="integer">121</XPD:ATTR>
 <XPD:REF name="Model">CvbfS3lk3ECFwlcQu0KnIwAA</XPD:REF>
 <XPD:OBJ name="NameCompartment" type="UMLNameCompartmentView" guid="1uVcFgcy3EGwGBZlhwxECwAA">
 <XPD:OBJ name="NameLabel" type="LabelView" guid="44rjvZciNEqEspIjjyyp6AAA">
@@ -903,7 +903,7 @@
 <XPD:OBJ name="OwnedViews[19]" type="UMLAssociationView" guid="YuetRp9XykaLGdZErhDQQwAA">
 <XPD:ATTR name="LineColor" type="string">clMaroon</XPD:ATTR>
 <XPD:ATTR name="FillColor" type="string">$00B9FFFF</XPD:ATTR>
-<XPD:ATTR name="Points" type="Points">308,636;226,580</XPD:ATTR>
+<XPD:ATTR name="Points" type="Points">307,640;226,582</XPD:ATTR>
 <XPD:REF name="Model">8N+EUm+QcESYA+nkJp29rgAA</XPD:REF>
 <XPD:REF name="Head">p3Mo2tUbnEGR5kJlgj2vCAAA</XPD:REF>
 <XPD:REF name="Tail">7ZwaBf+FNE6l1H7y9uD4+AAA</XPD:REF>
@@ -1014,7 +1014,7 @@
 <XPD:OBJ name="OwnedViews[21]" type="UMLDependencyView" guid="1OSz/1wW2EKOvfgXuTPlLQAA">
 <XPD:ATTR name="LineColor" type="string">clMaroon</XPD:ATTR>
 <XPD:ATTR name="FillColor" type="string">$00B9FFFF</XPD:ATTR>
-<XPD:ATTR name="Points" type="Points">466,645;594,575</XPD:ATTR>
+<XPD:ATTR name="Points" type="Points">466,650;594,577</XPD:ATTR>
 <XPD:REF name="Model">v05PLjLGP0qRDkVns30xZQAA</XPD:REF>
 <XPD:REF name="Head">cLdfruExREOojGuhZdCavgAA</XPD:REF>
 <XPD:REF name="Tail">7ZwaBf+FNE6l1H7y9uD4+AAA</XPD:REF>
@@ -1304,7 +1304,7 @@
 <XPD:REF name="Associations[0]">tlakGvBHdUOhEOaJDA+b7AAA</XPD:REF>
 <XPD:REF name="Associations[1]">YmyNgpEw9ESA6vtgJjC4XAAA</XPD:REF>
 <XPD:REF name="Associations[2]">ubZhw60Xz0ysm0ruzNsFIAAA</XPD:REF>
-<XPD:ATTR name="#Attributes" type="integer">9</XPD:ATTR>
+<XPD:ATTR name="#Attributes" type="integer">8</XPD:ATTR>
 <XPD:OBJ name="Attributes[0]" type="UMLAttribute" guid="zocH/+3svUK0P/MA73tvnQAA">
 <XPD:ATTR name="Name" type="string">reservationId</XPD:ATTR>
 <XPD:ATTR name="TypeExpression" type="string">Long</XPD:ATTR>
@@ -1320,32 +1320,27 @@
 <XPD:ATTR name="TypeExpression" type="string">Long</XPD:ATTR>
 <XPD:REF name="Owner">dGHLsLu4dUaQFcXBOVju5AAA</XPD:REF>
 </XPD:OBJ>
-<XPD:OBJ name="Attributes[3]" type="UMLAttribute" guid="8CFEH5J1TkqM5Zc6Tqm6tgAA">
-<XPD:ATTR name="Name" type="string">reserveTime</XPD:ATTR>
-<XPD:ATTR name="TypeExpression" type="string">Date</XPD:ATTR>
-<XPD:REF name="Owner">dGHLsLu4dUaQFcXBOVju5AAA</XPD:REF>
-</XPD:OBJ>
-<XPD:OBJ name="Attributes[4]" type="UMLAttribute" guid="HZ6Za/aXqkuqWbojzgOb2wAA">
+<XPD:OBJ name="Attributes[3]" type="UMLAttribute" guid="HZ6Za/aXqkuqWbojzgOb2wAA">
 <XPD:ATTR name="Name" type="string">createTime</XPD:ATTR>
 <XPD:ATTR name="TypeExpression" type="string">Date</XPD:ATTR>
 <XPD:REF name="Owner">dGHLsLu4dUaQFcXBOVju5AAA</XPD:REF>
 </XPD:OBJ>
-<XPD:OBJ name="Attributes[5]" type="UMLAttribute" guid="CiEAd1hKJUSZ/mo1ivDv+QAA">
+<XPD:OBJ name="Attributes[4]" type="UMLAttribute" guid="CiEAd1hKJUSZ/mo1ivDv+QAA">
 <XPD:ATTR name="Name" type="string">startTime</XPD:ATTR>
 <XPD:ATTR name="TypeExpression" type="string">Date</XPD:ATTR>
 <XPD:REF name="Owner">dGHLsLu4dUaQFcXBOVju5AAA</XPD:REF>
 </XPD:OBJ>
-<XPD:OBJ name="Attributes[6]" type="UMLAttribute" guid="LiyJDlPyakyrdGoCf1XsOgAA">
+<XPD:OBJ name="Attributes[5]" type="UMLAttribute" guid="LiyJDlPyakyrdGoCf1XsOgAA">
 <XPD:ATTR name="Name" type="string">endTime</XPD:ATTR>
 <XPD:ATTR name="TypeExpression" type="string">Date</XPD:ATTR>
 <XPD:REF name="Owner">dGHLsLu4dUaQFcXBOVju5AAA</XPD:REF>
 </XPD:OBJ>
-<XPD:OBJ name="Attributes[7]" type="UMLAttribute" guid="OcQf8lRb2EuRaK0lZFYseAAA">
+<XPD:OBJ name="Attributes[6]" type="UMLAttribute" guid="OcQf8lRb2EuRaK0lZFYseAAA">
 <XPD:ATTR name="Name" type="string">signInDeadline</XPD:ATTR>
 <XPD:ATTR name="TypeExpression" type="string">Date</XPD:ATTR>
 <XPD:REF name="Owner">dGHLsLu4dUaQFcXBOVju5AAA</XPD:REF>
 </XPD:OBJ>
-<XPD:OBJ name="Attributes[8]" type="UMLAttribute" guid="LSLqWaZSCkKM3Et8u76i4gAA">
+<XPD:OBJ name="Attributes[7]" type="UMLAttribute" guid="LSLqWaZSCkKM3Et8u76i4gAA">
 <XPD:ATTR name="Name" type="string">status</XPD:ATTR>
 <XPD:ATTR name="TypeExpression" type="string">ReservationStatus</XPD:ATTR>
 <XPD:REF name="Type_">A1LORTJRX0GxDO3QOcGOqgAA</XPD:REF>
@@ -1680,7 +1675,7 @@
 <XPD:REF name="ClientDependencies[0]">v05PLjLGP0qRDkVns30xZQAA</XPD:REF>
 <XPD:ATTR name="#Associations" type="integer">1</XPD:ATTR>
 <XPD:REF name="Associations[0]">ADMOZY/O4kKGXgM5y4mULQAA</XPD:REF>
-<XPD:ATTR name="#Attributes" type="integer">5</XPD:ATTR>
+<XPD:ATTR name="#Attributes" type="integer">6</XPD:ATTR>
 <XPD:OBJ name="Attributes[0]" type="UMLAttribute" guid="AF7cAjtC6U+0j1RVUTyy7QAA">
 <XPD:ATTR name="Name" type="string">logId</XPD:ATTR>
 <XPD:ATTR name="TypeExpression" type="string">Long</XPD:ATTR>
@@ -1704,6 +1699,11 @@
 <XPD:OBJ name="Attributes[4]" type="UMLAttribute" guid="EJhz1YEmSUKObX36BiYXUgAA">
 <XPD:ATTR name="Name" type="string">createTime</XPD:ATTR>
 <XPD:ATTR name="TypeExpression" type="string">Date</XPD:ATTR>
+<XPD:REF name="Owner">CvbfS3lk3ECFwlcQu0KnIwAA</XPD:REF>
+</XPD:OBJ>
+<XPD:OBJ name="Attributes[5]" type="UMLAttribute" guid="97xnfqa/I0itwByL7cFsIwAA">
+<XPD:ATTR name="Name" type="string">reservationId</XPD:ATTR>
+<XPD:ATTR name="TypeExpression" type="string">String</XPD:ATTR>
 <XPD:REF name="Owner">CvbfS3lk3ECFwlcQu0KnIwAA</XPD:REF>
 </XPD:OBJ>
 </XPD:OBJ>
