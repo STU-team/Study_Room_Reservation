@@ -35,7 +35,7 @@
 - **StarUML 5.0（with cm）**：安装路径 `D:\StarUML`，用于本项目全部 UML 图的建模与导出，启动前需设置 Windows XP (Service Pack 2) 兼容模式。
 - **Git / GitHub**：版本控制与团队协作，主干 `main`，成员A（易雨杰）使用 `dev-A`，成员B（叶梅冰）使用 `dev-B-new`。
 - **IntelliJ IDEA + JDK 17 + Maven**：后续编码阶段使用（Maven Wrapper 已随仓库提供）。
-- **接口契约 v0.5**（`docs/contract/接口契约.md`）：本实验的业务字段、枚举取值、关键方法签名以契约为准，类图不另造名词。
+- **接口契约 v0.6**（`docs/contract/接口契约.md`）：本实验的业务字段、枚举取值、关键方法签名以契约为准，类图不另造名词。
 
 ## 四、实验内容及实验数据记录
 
@@ -126,10 +126,10 @@
 | Seat | updateStatus(newStatus: SeatStatus): void | 更新座位状态；OCCUPIED 不得直接改 AVAILABLE，必须先签退 |
 | Reservation | cancel(): boolean | 主动取消预约，释放座位 |
 | Reservation | checkIn(): boolean | 值班管理员在前台执行签到登记，置为已签到（Study-F01 操作者为值班管理员，不是学生自助） |
-| Reservation | checkOut(): boolean | 学生签退，释放座位，判定是否超时并扣分 |
+| Reservation | checkOut(): boolean | 值班管理员在前台执行签退登记，释放座位，判定是否超时并扣分 |
 | Reservation | handleNoShow(): void | 超时未签到由系统判定爽约，状态置 NO_SHOW，释放座位、扣 5 分并写流水 |
 
-> 说明：`handleNoShow` 是接口契约 v0.5 相对 v0.4 的关键补充。如果只靠学生点取消或管理员点签退，学生既不签到也不取消时座位会被永久占用，因此必须有一个独立的爽约判定入口。
+> 说明：`handleNoShow` 是接口契约 v0.5 起补充、v0.6 与类图对齐的关键入口。如果只靠学生点取消或管理员点签退，学生既不签到也不取消时座位会被永久占用，因此必须有一个独立的爽约判定入口。
 
 ### （四）类间关系
 
@@ -194,7 +194,7 @@
 - **属性**：seatId、roomName、seatNo、status。
 - **操作**：`updateStatus(newStatus: SeatStatus)` 更新座位状态，传入目标状态。
 - **关联**：与 SeatType 为 0..* : 1 聚合；与 Reservation 为 1 : 0..*；依赖 SeatStatus 枚举。
-- **状态流转**：AVAILABLE → RESERVED（预约成功）→ OCCUPIED（签到）→ AVAILABLE（签退释放）；任意状态 → CLOSED（转维修）；OCCUPIED 不得直接改为 AVAILABLE，必须先签退（契约 v0.5 约束）。
+- **状态流转**：AVAILABLE → RESERVED（预约成功）→ OCCUPIED（签到）→ AVAILABLE（签退释放）；任意状态 → CLOSED（转维修）；OCCUPIED 不得直接改为 AVAILABLE，必须先签退（契约 v0.6 约束）。
 - **支撑用例**：Study-C01、Study-C02、Study-F01、Study-F02、Study-M02。
 
 #### 5. Reservation（预约记录）
@@ -261,7 +261,7 @@
 
 ### （二）信用分机制的类图落点
 
-契约 v0.5 引入信用分后，类图上有三处必须同时对齐：
+契约 v0.4 引入信用分、v0.6 补流水表后，类图上有三处必须同时对齐：
 
 1. **分存在哪里**：`Student.creditScore` 是当前权威分值；每一次增减都同步写一条 `CreditScoreLog` 流水（记录 studentId、changeValue、reason、createTime），M03 管理界面展示的就是这张流水表。User 类不存信用分，避免账户和学生档案两边数据不一致。
 2. **扣多少由谁决定**：爽约扣 5、超时扣 1、低于 80 禁约、签到宽限 15 分钟——这些参数在 M01 维护用例中集中配置，类图上不单独建配置类，避免分析阶段过度设计；编码阶段再抽到常量类。
@@ -279,7 +279,7 @@
 
 ### （四）与契约的一致性核对
 
-类图中的 6 个业务类、3 个枚举，其属性名、关键方法名（`cancel` / `checkIn` / `handleNoShow` / `updateStatus` / `login` / `modifyInfo`）、枚举取值，逐项对照 `docs/contract/接口契约.md` v0.5，未发现不一致。特别是 `handleNoShow` 与 `SeatStatus.OCCUPIED` 不可直接改 AVAILABLE 的状态约束，均已体现在类图与方法说明中。
+类图中的 7 个业务类、4 个枚举，其属性名、关键方法名（`cancel` / `checkIn` / `checkOut` / `handleNoShow` / `updateStatus` / `login` / `modifyInfo`）、枚举取值，逐项对照 `docs/contract/接口契约.md` v0.6，未发现不一致。特别是 `handleNoShow` 将预约状态置为 `NO_SHOW` 并写 `CreditScoreLog`、`SeatStatus.OCCUPIED` 不可直接改 AVAILABLE 的状态约束，均已体现在类图与方法说明中。
 
 ## 六、分工与评审说明
 

@@ -52,7 +52,7 @@
 ## 三、B 评审时请重点检查
 
 1. **多重度是否反了**：特别是 SeatType->Seat（1:0..*）、User->Reservation（1:0..*）、Reservation->CheckinRecord（1:0..1）。
-2. **状态流转是否闭环**：SeatStatus 的 OCCUPIED 不能直接改 AVAILABLE，必须先签退（契约 v0.5 约束）；ReservationStatus 的 BOOKED -> CHECKED_IN -> CHECKED_OUT 主链路，BOOKED -> CANCELLED（学生主动取消），BOOKED -> NO_SHOW（系统爽约）三条分支。
+2. **状态流转是否闭环**：SeatStatus 的 OCCUPIED 不能直接改 AVAILABLE，必须先签退（契约 v0.6 约束）；ReservationStatus 的 BOOKED -> CHECKED_IN -> CHECKED_OUT 主链路，BOOKED -> CANCELLED（学生主动取消），BOOKED -> NO_SHOW（系统爽约）三条分支。
 3. **枚举值是否齐全**：Role 三值、SeatStatus 四值、ReservationStatus 五值（含新增 NO_SHOW）、CreditChangeReason 三值，缺一个都会导致后续代码写死字符串。
 4. **信用分落点**：爽约扣 5、超时扣 1、低于 80 禁约、签到宽限 15 分钟——每次扣分都写一条 CreditScoreLog；规则参数在本类图上**没有**单独建 SystemConfig 类，而是放在 M01 维护用例里；B 若觉得有必要，可以在时序图里以参数对象形式出现。
 5. **两条扣分链路不要混**：I03（签退释放包含的"判定超时并扣分"）走 `Reservation.checkOut()`，写 `CreditScoreLog(LATE_CHECKOUT, -1)`；爽约扣 5 分不走 I03，由后台定时任务调 `Reservation.handleNoShow()`，把 BOOKED 直接置 NO_SHOW，写 `CreditScoreLog(NO_SHOW, -5)`。
@@ -70,7 +70,7 @@
 
 ## 五、不需要 B 做的事
 
-- 不要改本类图的字段名与方法名；如发现与契约 v0.5 不一致，在 PR 评论里指出，由 A 统一修改。
+- 不要改本类图的字段名与方法名；如发现与契约 v0.6 不一致，在 PR 评论里指出，由 A 统一修改。
 - 不要在类图上新增 Service / DAO 类；这些留到 A-5、A-6 编码阶段再补。
 - 不要把 Role 拆成 Admin / Student 三个类；我们用枚举区分，已经在报告讨论节说明理由。
 
