@@ -82,7 +82,7 @@
 | Student | phone | String | 联系电话 |
 | Student | creditScore | Integer | 信用分，爽约扣 5、超时扣 1、低于 80 禁约 |
 | SeatType | typeName | String | 区域名称，如「单人自习区」 |
-| SeatType | seatCount | Integer（derived） | 该类型座位总数，由 Seat 按 typeName 聚合派生，不单独存储；M01 维护座位数量是通过增删 Seat 记录实现的，不是直接改这个字段 |
+| SeatType | seatCount | Integer {derived} | 该类型座位总数，由 Seat 按 typeName 聚合派生，不单独存储；M01 维护座位数量是通过增删 Seat 记录实现的，不是直接改这个字段 |
 | Seat | seatId | Long | 座位唯一编号 |
 | Seat | roomName | String | 所在房间名称 |
 | Seat | seatNo | String | 座位号，唯一标识 |
@@ -101,7 +101,7 @@
 | CheckinRecord | penalty | Integer | 本次扣减信用分，无扣分为 0 |
 | CreditScoreLog | logId | Long | 流水唯一编号 |
 | CreditScoreLog | studentId | String | 变动所属学生 |
-| CreditScoreLog | reservationId | String | 关联预约号，可空（管理员手工调整时为空），便于追溯到具体预约 |
+| CreditScoreLog | reservationId | Long | 关联预约号，可空（管理员手工调整时为空），便于追溯到具体预约 |
 | CreditScoreLog | changeValue | Integer | 本次变动分值（扣分记负，加分记正） |
 | CreditScoreLog | reason | CreditChangeReason | 变动原因，取值为枚举 |
 | CreditScoreLog | createTime | Date | 变动发生时间 |

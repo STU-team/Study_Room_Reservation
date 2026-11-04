@@ -24,11 +24,11 @@
 |---|---|---|
 | User | userId:Long、username:String、password:String、name:String、role:Role | login():boolean、modifyInfo():void |
 | Student | studentId:String、name:String、phone:String、creditScore:Integer | （信用分校验在预约流程中读取） |
-| SeatType | typeName:String、seatCount:Integer(derived) | 无 |
+| SeatType | typeName:String、seatCount:Integer{derived} | 无 |
 | Seat | seatId:Long、roomName:String、seatNo:String、status:SeatStatus | updateStatus(newStatus: SeatStatus):void |
 | Reservation | reservationId:Long、userId:Long、seatId:Long、createTime:Date、startTime:Date、endTime:Date、signInDeadline:Date、status:ReservationStatus | cancel():boolean、checkIn():boolean、checkOut():boolean、handleNoShow():void |
 | CheckinRecord | recordNo:String、actualStart:Date、actualEnd:Date、penalty:Integer | 无 |
-| CreditScoreLog | logId:Long、studentId:String、reservationId:String（可空，管理员手工调整时为空）、changeValue:Integer、reason:CreditChangeReason、createTime:Date | 无 |
+| CreditScoreLog | logId:Long、studentId:String、reservationId:Long（可空，管理员手工调整时为空）、changeValue:Integer、reason:CreditChangeReason、createTime:Date | 无 |
 
 ### 4 个枚举
 
