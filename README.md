@@ -2,10 +2,10 @@
 
 > **文件作用**：项目总览与开发入口说明，包含项目目标、目录结构、构建方式、文档索引与 Git 协同规范。
 > **课程**：CST9301 软件工程（汕头大学）
-> **仓库**：https://github.com/yyj138/Study_Room_Reservation
+> **仓库**：https://github.com/STU-team/Study_Room_Reservation
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
-> **当前版本**：v0.4（选题切换为自习室预约系统，文档与契约同步更新）
+> **当前版本**：v0.6（接口契约升至 v0.6，实验3 类图定稿为 7 业务类 + 4 枚举）
 > **当前开发分支**：`dev-A`/`dev-B-new`
 
 ## 一、项目简介
@@ -99,10 +99,11 @@ Study_Room_Reservation/
 
 - [x] A-1 项目初始化：仓库骨架、README、实验1报告（md + docx）
 - [x] 接口契约 v0.4：免费公共自习室模式，信用分机制，去除费率与费用结算（CONTRACT-CHANGE）
+- [x] 接口契约 v0.5：新增 `ReservationService.handleNoShow`（爽约自动判定）与 `SeatService.updateSeatStatus` 状态流转约束；信用分规则表补签到截止时间（CONTRACT-CHANGE）
 - [x] A-2 CIM-1 系统用例图（8 个用例、3 个参与者、系统边界）
 - [x] A-2 CIM-2 "在线预约"活动图（学生/系统两泳道、判断与异常分支）
-- [x] B-1 实验2 系统用例图与 12 条用例叙述（已完成）
-- [ ] A-3 总类图与类字典（等 B-1 合并后即可启动）
+- [x] B-1 实验2 系统用例图与 12 条用例叙述（PR #7、#8 已合并）
+- [x] A-3 总类图与类字典（7 个业务类 + 4 个枚举、6 条关联含 1 条聚合、4 条枚举依赖；含 CreditScoreLog 信用分流水与 ReservationStatus.NO_SHOW；StarUML 工程 `docs/uml/实验3_总类图.uml`，报告 md + docx，图见 `docs/assets/实验3_总类图.jpg`）
 - [ ] A-4 状态图
 - [ ] A-5 实体类与 DAO
 - [ ] A-6 Service 业务逻辑
