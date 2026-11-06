@@ -93,10 +93,10 @@ Study_Room_Reservation/
 | [A-5 实现记录](docs/development/A5-实现记录.md) | 实体、七张 CSV 持久层、字段映射约定与验证结果 |
 | [A-5 到后续 A-6 与 B 对接说明](docs/contract/对接-A5到后续A6与B.md) | 持久化口径、A-6 编码约定、预约号格式与异常约定 |
 | [A-6 实现记录](docs/development/A6-实现记录.md) | Service 层实现范围、业务规则落点、实现取舍与测试结果 |
-| [A-6 到后续 B 对接说明](docs/contract/对接-A6到后续B.md) | 前端如何获取 Service、方法清单、异常码与演示注意 |
+| [A-6 到后续 B 对接说明](docs/contract/对接-A6到后续B.md) | 前端如何获取 Service、方法清单、异常码；B 的开工步骤、三张表列定义与刷新时机、演示注意 |
 | [实验8 版本控制实践记录](docs/reports/实验8-版本控制.md) | Git 分支策略、PR 评审闭环、25 条提交明细与问题处理 |
 | [实验8 报告（Word）](docs/reports/实验8-版本控制.docx) | 提交用版本，版式与实验5 定稿一致 |
-| [A-7 到 A-8 联调清单](docs/contract/对接-A7到A8联调清单.md) | 界面动作对应 Service 方法、12 个异常码提示文案、演示数据用法与验收清单 |
+| [A-7 到 A-8 联调清单](docs/contract/对接-A7到A8联调清单.md) | 界面动作对应 Service 方法、12 个异常码提示文案、演示数据用法、验收清单与已知边界 |
 | [演示数据](docs/assets/demo-data/README.md) | 7 个 CSV，覆盖 4 种座位状态与 5 种预约状态，供 A-8 联调与答辩演示 |
 
 ## 七、Git 协同规范

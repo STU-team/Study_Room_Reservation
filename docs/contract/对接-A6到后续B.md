@@ -1,11 +1,11 @@
 # 对接：A-6 Service 层交给 B
 
-> **文件作用**：成员B 做 Swing 界面（B-4/B-5）时与 A-6 Service 层的对接约定：怎么拿实例、有哪些方法、异常怎么处理。
+> **文件作用**：成员B 做 Swing 界面（B-4/B-5）时与 A-6 Service 层的对接约定：怎么拿实例、有哪些方法、异常怎么处理、开工步骤。
 > **课程**：CST9301 软件工程  
 > **作者**：易雨杰（成员A）  
 > **创建时间**：2026-11-06  
-> **版本**：v1.1（签到即落盘、签退回填；`AuthService` 无状态说明）  
-> **关联**：`docs/contract/接口契约.md` v1.1 第六节、`docs/development/A6-实现记录.md`
+> **版本**：v1.2（补预约列表与在座名单方法、B 的开工步骤、三张表列定义与刷新时机、当前取不到的数据清单）  
+> **关联**：`docs/contract/接口契约.md` v1.1 第六、七节、`docs/development/A6-实现记录.md`
 
 ## 一、怎么拿到 Service
 
@@ -80,7 +80,89 @@ AuthService authService = ServiceFactory.getAuthService();
 ## 六、与 B 的分工约定（已提出，B 确认前可按此实现）
 
 1. **爽约扫描由前端触发**：A 侧只提供 `handleNoShow(now)` 纯方法，不在 Service 里起后台线程。B 在界面启动后立即调一次，再用 `javax.swing.Timer` 每 60 分钟调一次；界面关闭时定时器随之停止。这样定时器生命周期跟着界面走，不会出现窗口关了线程还在写 CSV 的情况。
-2. **签到即落盘，签退回填**（契约 v0.9）：`signIn` 时立刻写一条 `CheckinRecord`（`actualStart` = 签到时刻，`actualEnd` 为空，`penalty` = 0），`signOut` 时用 `CheckinRecordDao.update` 回填 `actualEnd` 与 `penalty`，`recordNo` 不变。所以“实时在座名单”可以直接查 `checkin_records.csv` 中 `actualEnd` 为空的行，B 不必再自己维护内存集合。
+2. **签到即落盘，签退回填**（契约 v0.9）：`signIn` 时立刻写一条 `CheckinRecord`（`actualStart` = 签到时刻，`actualEnd` 为空，`penalty` = 0），`signOut` 时用 `CheckinRecordDao.update` 回填 `actualEnd` 与 `penalty`，`recordNo` 不变。所以「在座名单」直接调 `listSeated()`（契约 v1.1，返回 `actualEnd` 为空的记录），B 不必自己维护内存集合。
 3. **`AuthService` 无状态**：`login` 返回 `User`，请界面自己保存这个引用用于角色渲染与页面切换；`logout()` 只承载登出语义（Service 内不存会话），界面清空自己保存的当前用户即可。未做会话超时与权限分级。
 
 > 上述两条由 A 提出，B 若在评审中不认可，按 `CONTRACT-CHANGE` 流程调整后再改文档与代码。
+
+## 七、B 的开工步骤（从拉分支到第一个能跑的窗口）
+
+`dev-B-new` 上目前只有 B-1/B-2 的文档与活动图，还没有 `src` 下的代码，所以**第一步是先把 A 侧代码合进来**。
+
+```powershell
+cd <仓库根>
+git fetch origin
+git switch dev-B-new
+git merge origin/dev-A
+```
+
+合并完成后 `src/main/java/com/studyroom` 下应当有 `entity`、`dao`、`service`、`util` 四个包；先跑 `.\mvnw.cmd test`，应看到 34 个用例通过，再开始写界面。
+
+### 7.1 程序入口骨架
+
+```java
+public static void main(String[] args) {
+    ServiceFactory.configure(Path.of("data"));
+    ReservationService reservations = ServiceFactory.getReservationService();
+    try {
+        reservations.handleNoShow(LocalDateTime.now());
+    } catch (BusinessException e) {
+        JOptionPane.showMessageDialog(null, e.getMessage());
+    }
+    SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+}
+```
+
+爽约扫描的定时器挂在主窗体上，窗体销毁时随之停止（`Timer.stop()` 放 `windowClosing` 或 `dispose` 之后）：
+
+```java
+javax.swing.Timer noShowTimer = new javax.swing.Timer(60 * 60 * 1000,
+        e -> reservations.handleNoShow(LocalDateTime.now()));
+noShowTimer.setRepeats(true);
+noShowTimer.start();
+```
+
+`handleNoShow` 内部只读写几十行 CSV，可以直接在 EDT 调用；不要在回调里做别的事，异常记到状态栏即可，别弹窗打断操作。
+
+### 7.2 学号从哪来
+
+`User.getUsername()` 就是登录名，**学生账号的登录名就是学号**（`users.csv`：`20240001/123456/STUDENT`），所以「我的预约」直接传：
+
+```java
+List<Reservation> mine = reservations.listReservations(currentUser.getUsername());
+```
+
+只有 `Role == STUDENT` 的账号才这样用；`duty`、`admin` 的 `username` 不是学号，请改用 `listAllReservations()`，否则会返回空列表（不会报错）。
+
+### 7.3 三张表的列定义
+
+时间字段是 `java.util.Date`，用 `new SimpleDateFormat("yyyy-MM-dd HH:mm")` 展示；只显示时段时用 `"HH:mm"`。
+
+| 表格 | 数据来源 | 建议列（取值器） |
+|---|---|---|
+| 我的预约 / 全部预约 | `listReservations(studentId)` / `listAllReservations()` | 预约号 `getResNo()`、学号 `getStudentId()`、座位 `getSeatNo()`、日期时间 `getStartTime()`/`getEndTime()`、状态 `getStatus()`、签到截止 `getSignInDeadline()`、提交时间 `getCreateTime()` |
+| 在座名单 | `listSeated()` | 记录号 `getRecordNo()`、预约号 `getResNo()`、签到时间 `getActualStart()`、超时扣分 `getPenalty()` |
+| 座位总览 | `listAllSeats()` | 座位号 `getSeatNo()`、区域 `getRoomName()`、状态 `getStatus()` |
+
+状态中文映射：座位 `AVAILABLE` 可用 / `RESERVED` 已预约 / `OCCUPIED` 使用中 / `CLOSED` 维修；预约 `BOOKED` 待签到 / `CHECKED_IN` 使用中 / `CHECKED_OUT` 已签退 / `CANCELLED` 已取消 / `NO_SHOW` 爽约。
+
+### 7.4 操作后该刷哪张表
+
+| 操作 | 需要刷新 |
+|---|---|
+| 预约成功 | 座位总览、我的预约 |
+| 取消预约 | 座位总览、我的预约 |
+| 签到 | 座位总览、我的预约、在座名单 |
+| 签退 | 座位总览、我的预约、在座名单 |
+| 爽约扫描 | 座位总览、全部预约、我的预约 |
+| 转维修/恢复 | 座位总览 |
+
+刷新就是重新调一次上面的查询方法、重建 `DefaultTableModel` 的行，别自己维护增量状态——CSV 是唯一数据源，重读成本很低。
+
+### 7.5 目前确实取不到的数据（A 未擅自加接口）
+
+1. **预约记录里没有姓名和手机号**。`Reservation` 实体只有 `studentId`，CSV 的 `studentName`/`phone` 两列在写入时由学生档案反查填充，读取回来未挂到实体上。所以预约表格只能显示学号；管理端要显示「张三 / 20240001」，需在实体补 `studentName`、`phone` 两个只读字段并在 `CsvReservationDao.toReservation` 里映射（表头不用改，属小改）。
+2. **没有学生档案查询接口**，所以界面上取不到信用分（`Student.getCreditScore()` 只能由 Service 内部用）。若要显示「我的信用分」，需补一个 `StudentService` 或 `ReservationService.findStudent(studentId)`。
+3. **在座名单只有预约号**，要显示该记录的座位号与学号，需再按 `resNo` 查一次预约，但 Service 未暴露按预约号查询的方法；目前表格用「记录号 + 预约号 + 签到时间」三列即可满足验收。
+
+> 上面 1、2、3 都属新增接口或字段，A 没有擅自改契约。B 写界面时如果确实需要，回复一句要哪几条，A 再走 `CONTRACT-CHANGE` 补上并同步契约与测试。
