@@ -94,7 +94,8 @@ Study_Room_Reservation/
 | [A-5 到后续 A-6 与 B 对接说明](docs/contract/对接-A5到后续A6与B.md) | 持久化口径、A-6 编码约定、预约号格式与异常约定 |
 | [A-6 实现记录](docs/development/A6-实现记录.md) | Service 层实现范围、业务规则落点、实现取舍与测试结果 |
 | [A-6 到后续 B 对接说明](docs/contract/对接-A6到后续B.md) | 前端如何获取 Service、方法清单、异常码与演示注意 |
-| [实验8 版本控制实践记录](docs/reports/实验8-版本控制.md) | Git 分支策略、PR 评审闭环、23 条提交明细与问题处理 |
+| [实验8 版本控制实践记录](docs/reports/实验8-版本控制.md) | Git 分支策略、PR 评审闭环、25 条提交明细与问题处理 |
+| [实验8 报告（Word）](docs/reports/实验8-版本控制.docx) | 提交用版本，版式与实验5 定稿一致 |
 | [PR 描述草稿](docs/contract/PR描述-dev-A.md) | `dev-A → main` 的 PR 标题与正文，含三处 `CONTRACT-CHANGE` 说明 |
 
 ## 七、Git 协同规范
