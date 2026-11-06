@@ -42,9 +42,4 @@ public class CsvSeatDao implements SeatDao {
         rows.set(i, List.of(seat.getSeatNo(), type, seat.getStatus().name()));
         store.save(rows);
     }
-
-    /** 区域座位数（SeatType.seatCount 的派生来源）。 */
-    public synchronized int countByTypeName(String typeName) {
-        return (int) store.data().stream().filter(r -> typeName != null && typeName.equals(r.get(1))).count();
-    }
 }
