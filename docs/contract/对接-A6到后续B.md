@@ -4,8 +4,8 @@
 > **课程**：CST9301 软件工程  
 > **作者**：易雨杰（成员A）  
 > **创建时间**：2026-11-06  
-> **版本**：v1.2（补预约列表与在座名单方法、B 的开工步骤、三张表列定义与刷新时机、当前取不到的数据清单）  
-> **关联**：`docs/contract/接口契约.md` v1.1 第六、七节、`docs/development/A6-实现记录.md`
+> **版本**：v1.3（契约 v1.2：预约记录带姓名/手机号、新增 `StudentService` 与 `findReservation`，三项取数缺口已补齐）  
+> **关联**：`docs/contract/接口契约.md` v1.2 第三、六、七节、`docs/development/A6-实现记录.md`
 
 ## 一、怎么拿到 Service
 
@@ -29,6 +29,9 @@ AuthService authService = ServiceFactory.getAuthService();
 | `listReservations(studentId)` | 学号 | `List<Reservation>` | 学生端「我的预约」表格，按开始时间倒序 |
 | `listAllReservations()` | — | `List<Reservation>` | 管理端「全部预约」表格，按开始时间倒序 |
 | `listSeated()` | — | `List<CheckinRecord>` | 「在座名单」表格，只含已签到未签退的记录 |
+| `findReservation(resNo)` | 预约号 | `Reservation` | 在座名单里按预约号补座位、姓名；不存在抛 `NOT_FOUND` |
+| `studentService.findByStudentId(id)` | 学号 | `Student` | 取姓名、手机号、信用分；不存在抛 `STUDENT_NOT_FOUND` |
+| `studentService.listStudents()` | — | `List<Student>` | 管理端学生列表，按信用分升序 |
 | `reserve(seatNo, student, date, start, end)` | 座位号、`Student`（可传当前登录学生）、日期、起止时间 | `Reservation`（含 `resNo`） | 提交预约成功后弹窗展示预约号 |
 | `cancelReservation(resNo)` | 预约号 | `Reservation`（状态 `CANCELLED`） | 我的预约列表的取消按钮 |
 | `signIn(resNo)` | 预约号 | `Reservation`（状态 `CHECKED_IN`） | 值班管理员签到登记 |
@@ -140,8 +143,8 @@ List<Reservation> mine = reservations.listReservations(currentUser.getUsername()
 
 | 表格 | 数据来源 | 建议列（取值器） |
 |---|---|---|
-| 我的预约 / 全部预约 | `listReservations(studentId)` / `listAllReservations()` | 预约号 `getResNo()`、学号 `getStudentId()`、座位 `getSeatNo()`、日期时间 `getStartTime()`/`getEndTime()`、状态 `getStatus()`、签到截止 `getSignInDeadline()`、提交时间 `getCreateTime()` |
-| 在座名单 | `listSeated()` | 记录号 `getRecordNo()`、预约号 `getResNo()`、签到时间 `getActualStart()`、超时扣分 `getPenalty()` |
+| 我的预约 / 全部预约 | `listReservations(studentId)` / `listAllReservations()` | 预约号 `getResNo()`、姓名 `getStudentName()`、学号 `getStudentId()`、手机 `getPhone()`、座位 `getSeatNo()`、日期时间 `getStartTime()`/`getEndTime()`、状态 `getStatus()`、签到截止 `getSignInDeadline()`、提交时间 `getCreateTime()` |
+| 在座名单 | `listSeated()` | 记录号 `getRecordNo()`、预约号 `getResNo()`、签到时间 `getActualStart()`、超时扣分 `getPenalty()`；要显示座位与姓名，用 `resNo` 再调一次 `findReservation(resNo)` |
 | 座位总览 | `listAllSeats()` | 座位号 `getSeatNo()`、区域 `getRoomName()`、状态 `getStatus()` |
 
 状态中文映射：座位 `AVAILABLE` 可用 / `RESERVED` 已预约 / `OCCUPIED` 使用中 / `CLOSED` 维修；预约 `BOOKED` 待签到 / `CHECKED_IN` 使用中 / `CHECKED_OUT` 已签退 / `CANCELLED` 已取消 / `NO_SHOW` 爽约。
@@ -159,10 +162,10 @@ List<Reservation> mine = reservations.listReservations(currentUser.getUsername()
 
 刷新就是重新调一次上面的查询方法、重建 `DefaultTableModel` 的行，别自己维护增量状态——CSV 是唯一数据源，重读成本很低。
 
-### 7.5 目前确实取不到的数据（A 未擅自加接口）
+### 7.5 取数能力（三项缺口已补，契约 v1.2）
 
-1. **预约记录里没有姓名和手机号**。`Reservation` 实体只有 `studentId`，CSV 的 `studentName`/`phone` 两列在写入时由学生档案反查填充，读取回来未挂到实体上。所以预约表格只能显示学号；管理端要显示「张三 / 20240001」，需在实体补 `studentName`、`phone` 两个只读字段并在 `CsvReservationDao.toReservation` 里映射（表头不用改，属小改）。
-2. **没有学生档案查询接口**，所以界面上取不到信用分（`Student.getCreditScore()` 只能由 Service 内部用）。若要显示「我的信用分」，需补一个 `StudentService` 或 `ReservationService.findStudent(studentId)`。
-3. **在座名单只有预约号**，要显示该记录的座位号与学号，需再按 `resNo` 查一次预约，但 Service 未暴露按预约号查询的方法；目前表格用「记录号 + 预约号 + 签到时间」三列即可满足验收。
+1. **预约记录带姓名和手机号**：`Reservation` 增加了只读展示字段 `studentName`、`phone`（写入时按学号反查学生档案填充，读取 CSV 时还原），所以预约表格可以直接显示「张三 / 20240001 / 138…」，不用再查学生。
+2. **有学生档案接口了**：`studentService.findByStudentId("20240001")` 返回 `Student`，可取 `getCreditScore()`（学生端显示「我的信用分」）、`getName()`、`getPhone()`；`listStudents()` 按信用分升序，管理端可列出谁低于 80 分。
+3. **在座名单可补全信息**：`listSeated()` 给的是签到记录（只有预约号），要显示座位号和姓名就再调一次 `findReservation(resNo)`，返回的预约对象带 `seatNo`、`studentName`、`phone`。
 
-> 上面 1、2、3 都属新增接口或字段，A 没有擅自改契约。B 写界面时如果确实需要，回复一句要哪几条，A 再走 `CONTRACT-CHANGE` 补上并同步契约与测试。
+> 拿实例：`ServiceFactory.getStudentService()`，与另外三个 Service 一样是单例，第一次调用时才建表。

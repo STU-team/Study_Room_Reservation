@@ -25,6 +25,9 @@ public interface ReservationService {
     /** 查询当前在座记录（并已签到未签退，即 actualEnd 为空的签到记录）。 */
     List<CheckinRecord> listSeated();
 
+    /** 按预约号查单条预约，供在座名单等场景补座位与预约人信息；不存在抛 NOT_FOUND。 */
+    Reservation findReservation(String resNo) throws BusinessException;
+
     /** 在线预约：信用分 >= 80、座位可用且时段不冲突时生成预约记录。 */
     Reservation reserve(String seatNo, Student student, LocalDate date, LocalTime start, LocalTime end)
             throws BusinessException;

@@ -7,6 +7,8 @@ import java.util.Date;
 public class Reservation {
     private String resNo;
     private String studentId;
+    private String studentName;
+    private String phone;
     private String seatNo;
     private Long reservationId;
     private Long userId;
@@ -37,6 +39,12 @@ public class Reservation {
     public void setResNo(String resNo) { this.resNo = resNo; }
     public String getStudentId() { return studentId; }
     public void setStudentId(String studentId) { this.studentId = studentId; }
+    /** 预约人姓名，读取 CSV 时还原，供界面表格直接展示（契约 v1.2）。 */
+    public String getStudentName() { return studentName; }
+    public void setStudentName(String studentName) { this.studentName = studentName; }
+    /** 预约人手机号，读取 CSV 时还原（契约 v1.2）。 */
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
     public String getSeatNo() { return seatNo; }
     public void setSeatNo(String seatNo) { this.seatNo = seatNo; }
     public Long getReservationId() { return reservationId; }

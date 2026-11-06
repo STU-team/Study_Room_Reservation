@@ -15,6 +15,7 @@ import com.studyroom.dao.impl.CsvUserDao;
 import com.studyroom.service.impl.AuthServiceImpl;
 import com.studyroom.service.impl.ReservationServiceImpl;
 import com.studyroom.service.impl.SeatServiceImpl;
+import com.studyroom.service.impl.StudentServiceImpl;
 import com.studyroom.util.DataInitializer;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ public final class ServiceFactory {
     private static ReservationService reservationService;
     private static SeatService seatService;
     private static AuthService authService;
+    private static StudentService studentService;
 
     private ServiceFactory() {
     }
@@ -49,6 +51,7 @@ public final class ServiceFactory {
         reservationService = null;
         seatService = null;
         authService = null;
+        studentService = null;
     }
 
     public static synchronized ReservationService getReservationService() {
@@ -74,6 +77,14 @@ public final class ServiceFactory {
             authService = new AuthServiceImpl(userDao);
         }
         return authService;
+    }
+
+    public static synchronized StudentService getStudentService() {
+        if (studentService == null) {
+            assemble();
+            studentService = new StudentServiceImpl(studentDao);
+        }
+        return studentService;
     }
 
     /** 首次装配时建表并写入示例数据（契约第八节）；依赖 CsvReservationDao 需要学生档案，故按序创建。 */

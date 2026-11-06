@@ -214,6 +214,19 @@ class ReservationServiceTest {
         assertEquals(1, checkinRecordDao.findAll().size());
     }
 
+    @Test
+    void savedReservationCarriesStudentNameAndPhone() {
+        Reservation r = book("A01", TEN, TWELVE);
+        Reservation read = service.findReservation(r.getResNo());
+
+        assertEquals("张三", r.getStudentName());
+        assertEquals("13800000000", r.getPhone());
+        assertEquals("张三", read.getStudentName());
+        assertEquals("13800000000", read.getPhone());
+        assertEquals("NOT_FOUND",
+                assertThrows(BusinessException.class, () -> service.findReservation("RES20990101001")).getCode());
+    }
+
     private Reservation book(String seatNo, LocalTime start, LocalTime end) {
         Student student = studentDao.findByStudentId("20240001");
         return service.reserve(seatNo, student, TOMORROW, start, end);

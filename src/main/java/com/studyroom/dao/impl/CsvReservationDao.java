@@ -124,6 +124,8 @@ public class CsvReservationDao implements ReservationDao {
                 ReservationStatus.valueOf(row.get(8).isBlank() ? "BOOKED" : row.get(8)));
         r.setResNo(row.get(0));
         r.setStudentId(row.get(2));
+        r.setStudentName(row.get(1));
+        r.setPhone(row.get(3));
         r.setSeatNo(row.get(4));
         return r;
     }

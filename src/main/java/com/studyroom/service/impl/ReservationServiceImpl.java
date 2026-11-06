@@ -92,6 +92,14 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    public Reservation findReservation(String resNo) {
+        if (resNo == null || resNo.isBlank()) throw new BusinessException("PARAM", "预约号不能为空");
+        Reservation reservation = reservationDao.findByNo(resNo);
+        if (reservation == null) throw new BusinessException("NOT_FOUND", "预约记录不存在：" + resNo);
+        return reservation;
+    }
+
+    @Override
     public Reservation reserve(String seatNo, Student student, LocalDate date, LocalTime start, LocalTime end) {
         if (seatNo == null || student == null || date == null || start == null || end == null) {
             throw new BusinessException("PARAM", "预约信息不完整");
@@ -122,6 +130,8 @@ public class ReservationServiceImpl implements ReservationService {
                 DateTimes.plusMinutes(from, DEADLINE_MINUTES), ReservationStatus.BOOKED);
         reservation.setResNo(reservationDao.nextResNo());
         reservation.setStudentId(current.getStudentId());
+        reservation.setStudentName(current.getName());
+        reservation.setPhone(current.getPhone());
         reservation.setSeatNo(seatNo);
         reservationDao.save(reservation);
 
@@ -226,11 +236,12 @@ public class ReservationServiceImpl implements ReservationService {
 
     /** 按预约开始时间倒序，方便界面把最近的排在最前。 */
     private List<Reservation> sortByStartDesc(List<Reservation> reservations) {
-        reservations.sort((a, b) -> {
+        List<Reservation> sorted = new ArrayList<>(reservations);
+        sorted.sort((a, b) -> {
             if (a.getStartTime() == null || b.getStartTime() == null) return 0;
             return b.getStartTime().compareTo(a.getStartTime());
         });
-        return reservations;
+        return sorted;
     }
 
     /** 同一座位在 [from, to) 内是否存在占用中的预约。 */    private boolean occupied(List<Reservation> reservations, String seatNo, Date from, Date to) {

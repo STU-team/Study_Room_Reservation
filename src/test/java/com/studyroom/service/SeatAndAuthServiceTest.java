@@ -3,6 +3,7 @@ package com.studyroom.service;
 import com.studyroom.dao.SeatDao;
 import com.studyroom.dao.UserDao;
 import com.studyroom.dao.impl.CsvSeatDao;
+import com.studyroom.dao.impl.CsvStudentDao;
 import com.studyroom.dao.impl.CsvUserDao;
 import com.studyroom.entity.Role;
 import com.studyroom.entity.Seat;
@@ -10,6 +11,7 @@ import com.studyroom.entity.SeatStatus;
 import com.studyroom.entity.User;
 import com.studyroom.service.impl.AuthServiceImpl;
 import com.studyroom.service.impl.SeatServiceImpl;
+import com.studyroom.service.impl.StudentServiceImpl;
 import com.studyroom.util.DataInitializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,7 @@ class SeatAndAuthServiceTest {
     private UserDao userDao;
     private SeatService seatService;
     private AuthService authService;
+    private StudentService studentService;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -37,6 +40,7 @@ class SeatAndAuthServiceTest {
         userDao = new CsvUserDao(dir);
         seatService = new SeatServiceImpl(seatDao);
         authService = new AuthServiceImpl(userDao);
+        studentService = new StudentServiceImpl(new CsvStudentDao(dir));
     }
 
     @Test
@@ -71,6 +75,18 @@ class SeatAndAuthServiceTest {
         User duty = authService.login("duty", "123456");
         assertEquals(Role.DUTY_ADMIN, duty.getRole());
         assertEquals("admin", admin.getUsername());
+    }
+
+    @Test
+    void studentServiceReturnsCreditScoreAndRejectsUnknownId() {
+        assertEquals(100, studentService.findByStudentId("20240001").getCreditScore());
+        assertEquals("张三", studentService.findByStudentId("20240001").getName());
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> studentService.findByStudentId("20249999"));
+        assertEquals("STUDENT_NOT_FOUND", e.getCode());
+        assertEquals("PARAM", assertThrows(BusinessException.class, () -> studentService.findByStudentId(" ")).getCode());
+        assertEquals(2, studentService.listStudents().size());
     }
 
     @Test
