@@ -31,7 +31,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** 六个 CSV DAO 的读写往返，覆盖契约 v0.6 第八节七张表。 */
+/** 七个 CSV DAO 的读写往返，覆盖契约 v0.8 第八节七张表。 */
 class CsvDaoRoundTripTest {
     @TempDir
     Path tempDir;
@@ -79,7 +79,8 @@ class CsvDaoRoundTripTest {
 
         Date start = at(2026, 11, 6, 8, 0);
         Date end = at(2026, 11, 6, 10, 0);
-        Reservation reservation = new Reservation(null, null, null, start, start, end,
+        Date createTime = at(2026, 11, 3, 20, 0);
+        Reservation reservation = new Reservation(null, null, null, createTime, start, end,
                 new Date(start.getTime() + 15 * 60_000L), ReservationStatus.BOOKED);
         reservation.setResNo(resNo);
         reservation.setStudentId("20240001");
@@ -91,6 +92,9 @@ class CsvDaoRoundTripTest {
         assertEquals(resNo, loaded.getResNo());
         assertEquals(ReservationStatus.BOOKED, loaded.getStatus());
         assertEquals(start.getTime(), loaded.getStartTime().getTime());
+        // createTime 有独立列，与 startTime 不同也能原样还原
+        assertEquals(createTime.getTime(), loaded.getCreateTime().getTime());
+        assertNotEquals(start.getTime(), loaded.getCreateTime().getTime());
         assertEquals(start.getTime() + 15 * 60_000L, loaded.getSignInDeadline().getTime());
         // resNo 稳定散列得到同一个 reservationId，重启后仍可还原
         assertEquals(loaded.getReservationId(), dao.findByNo(resNo).getReservationId());

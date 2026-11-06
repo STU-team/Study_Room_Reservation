@@ -20,7 +20,7 @@ import java.util.Objects;
 /**
  * ReservationDao 的 CSV 实现。
  * 映射：reservationId 由 resNo 散列，userId/seatId 由 studentId/seatNo 散列；
- * createTime 取 resDate+startTime（CSV 无该列，唯一有损项）；signInDeadline 取开始时间+15 分钟（契约第二节）。
+ * createTime 有独立列（契约 v0.8），signInDeadline 取开始时间+15 分钟（契约第二节）。
  */
 public class CsvReservationDao implements ReservationDao {
     private static final List<String> HEADER = DataInitializer.headers().get("reservations.csv");
@@ -96,8 +96,10 @@ public class CsvReservationDao implements ReservationDao {
         String start = new SimpleDateFormat(TIME, Locale.ROOT).format(r.getStartTime());
         String end = new SimpleDateFormat(TIME, Locale.ROOT).format(r.getEndTime());
         Student s = studentDao.findByStudentId(r.getStudentId());
+        String created = CsvMapper.time(r.getCreateTime() == null ? r.getStartTime() : r.getCreateTime());
         return List.of(r.getResNo(), s == null ? "" : CsvMapper.text(s.getName()), r.getStudentId(),
-                s == null ? "" : CsvMapper.text(s.getPhone()), r.getSeatNo(), date, start, end, r.getStatus().name());
+                s == null ? "" : CsvMapper.text(s.getPhone()), r.getSeatNo(), date, start, end,
+                r.getStatus().name(), created);
     }
 
     private Reservation toReservation(List<String> row) {
@@ -106,11 +108,12 @@ public class CsvReservationDao implements ReservationDao {
         String start = row.get(6);
         String end = row.get(7);
         Date startAt = combine(date, start);
+        Date createTime = CsvMapper.time(row.get(9));
         Reservation r = new Reservation(
                 CsvMapper.id(row.get(0)),
                 CsvMapper.id(row.get(2)),
                 CsvMapper.id(row.get(4)),
-                startAt, startAt, combine(date, end),
+                createTime == null ? startAt : createTime, startAt, combine(date, end),
                 new Date(startAt.getTime() + MINUTES_DEADLINE * 60_000L),
                 ReservationStatus.valueOf(row.get(8).isBlank() ? "BOOKED" : row.get(8)));
         r.setResNo(row.get(0));

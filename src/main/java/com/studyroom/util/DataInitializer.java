@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** 按接口契约 v0.6 初始化七张 CSV 的表头，不覆盖已存在的数据文件。 */
+/** 按接口契约 v0.8 初始化七张 CSV 的表头，不覆盖已存在的数据文件。 */
 public final class DataInitializer {
     private static final Map<String, List<String>> HEADERS = createHeaders();
 
@@ -18,7 +18,7 @@ public final class DataInitializer {
         headers.put("seats.csv", List.of("seatNo", "typeName", "status"));
         headers.put("seat_types.csv", List.of("typeName", "seatCount"));
         headers.put("reservations.csv", List.of("resNo", "studentName", "studentId", "phone",
-                "seatNo", "resDate", "startTime", "endTime", "status"));
+                "seatNo", "resDate", "startTime", "endTime", "status", "createTime"));
         headers.put("students.csv", List.of("name", "studentId", "phone", "creditScore"));
         headers.put("users.csv", List.of("username", "password", "role"));
         headers.put("checkin_records.csv", List.of("recordNo", "resNo", "actualStart", "actualEnd",

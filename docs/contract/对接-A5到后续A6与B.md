@@ -2,7 +2,7 @@
 
 > **文件作用**：成员A 把 A-5 的实体定义与实际落盘格式交接给后续开发。A-6 写 Service 时按本文件知道「实体怎么造、DAO 怎么调、字段从哪来」；B 写前端时按本文件知道「界面拿到的是哪些字段、状态值是什么、编号长什么样」。B 评审时对照本文件与 `docs/development/A5-实现记录.md` 即可，不需要再问 A 某个字段存不存。
 > **课程**：CST9301 软件工程　｜　**编写**：易雨杰（成员A，2024611209）　｜　**接收**：叶梅冰（成员B，2024611038）、A-6 编码
-> **日期**：2026-11-06　｜　**版本**：v1.1（契约 v0.7 补 DAO 接口后同步）　｜　**状态**：A-5 已完成，19 个单元测试通过，待 B 评审
+> **日期**：2026-11-06　｜　**版本**：v1.2（契约 v0.8 补 `createTime` 列后同步）　｜　**状态**：A-5 已完成，19 个单元测试通过，待 B 评审
 
 ## 一、A 已经交付什么
 
@@ -25,7 +25,7 @@
 |---|---|---|
 | `seats.csv` | `seatNo,typeName,status` | `seatId` 由 `seatNo` 稳定散列；`roomName` 与 `typeName` 同义复用 |
 | `seat_types.csv` | `typeName,seatCount` | `seatCount` 是派生值，读取时按 `seats.csv` 实时统计，列值仅冗余 |
-| `reservations.csv` | `resNo,studentName,studentId,phone,seatNo,resDate,startTime,endTime,status` | `reservationId` 由 `resNo` 散列；`createTime` 取 `resDate+startTime`（已知限制，无业务使用故不补列）；`signInDeadline` 按 `startTime+15 分钟` 还原；学生姓名与电话为写入时快照 |
+| `reservations.csv` | `resNo,studentName,studentId,phone,seatNo,resDate,startTime,endTime,status,createTime` | `reservationId` 由 `resNo` 散列；`createTime` 有独立列（契约 v0.8），写入时为空则取 `startTime` 兜底；`signInDeadline` 按 `startTime+15 分钟` 还原；学生姓名与电话为写入时快照 |
 | `students.csv` | `name,studentId,phone,creditScore` | 一一对应，无映射 |
 | `users.csv` | `username,password,role` | `userId` 由 `username` 散列；`name` 读入时取 `username` |
 | `checkin_records.csv` | `recordNo,resNo,actualStart,actualEnd,penalty,createTime` | 一一对应（实体已补 `resNo`、`createTime` 字段） |
@@ -43,7 +43,7 @@
 4. **座位状态转移由 Service 校验**：`Seat.updateStatus` 只赋值，`OCCUPIED` 不得直接改 `AVAILABLE`（契约 v0.5 约束）要在 `SeatService` 里判断。
 5. **信用分流水与扣分是同一步**：`handleNoShow` 扣 5 分写 `NO_SHOW`，`checkOut` 超时扣 1 分写 `LATE_CHECKOUT`，两笔都用 `CsvCreditScoreLogDao.save` 落盘，`reservationId` 填对应预约的 Long 主键。
 6. **`CreditScoreLogDao`、`SeatTypeDao` 已进契约 v0.7**：两个接口已在第七节声明，实现类分别 implements，A-6 直接按接口注入即可。
-7. **`Reservation.createTime` 不落盘**：CSV 无该列，重载后等于 `startTime`。经核对 A-1~A-4，该属性只在 A-3 类图中列出，未被任何用例、活动图、时序图或界面流程使用，本阶段不补列。
+7. **`Reservation.createTime` 已落盘（契约 v0.8）**：`reservations.csv` 末位新增 `createTime` 列，`save` 时若实体未设值则取 `startTime` 写入，读取原样还原；A-6 做“我的预约”列表按提交时间排序时可直接用 `Reservation.getCreateTime()`。
 
 ## 四、对 B 后续工作的影响
 
