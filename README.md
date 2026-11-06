@@ -5,7 +5,7 @@
 > **仓库**：https://github.com/STU-team/Study_Room_Reservation
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
-> **当前版本**：v0.6（接口契约升至 v0.6，实验3 类图定稿为 7 业务类 + 4 枚举）
+> **当前版本**：v0.7（A-4 状态图完成：座位状态图 + 预约记录状态图）
 > **当前开发分支**：`dev-A`/`dev-B-new`
 
 ## 一、项目简介
@@ -85,6 +85,10 @@ Study_Room_Reservation/
 | [进度看板](docs/进度看板.md) | A/B 任务状态、产出与截图清单 |
 | [CIM 建模说明](docs/reports/CIM建模说明.md) | CIM-1/CIM-2 元素清单、分支条件与实验对应 |
 | [A-2 到 B-1 对接说明](docs/contract/对接-A2到B1.md) | 交给成员B 的实验2 输入、命名约定与回传时间 |
+| [实验3报告（Markdown）](docs/reports/实验3-UML类图.md) | UML 类图与类字典，7 业务类 + 4 枚举 |
+| [A-3 到后续 B 对接说明](docs/contract/对接-A3到后续B.md) | 交给成员B 的类图口径、评审要点与后续任务影响 |
+| [实验5报告（Markdown）](docs/reports/实验5-状态图.md) | UML 状态图：座位状态图与预约记录状态图 |
+| [A-4 到后续 B 对接说明](docs/contract/对接-A4到后续B.md) | 交给成员B 的状态口径、评审要点与后续任务影响 |
 
 ## 七、Git 协同规范
 
@@ -104,6 +108,6 @@ Study_Room_Reservation/
 - [x] A-2 CIM-2 "在线预约"活动图（学生/系统两泳道、判断与异常分支）
 - [x] B-1 实验2 系统用例图与 12 条用例叙述（PR #7、#8 已合并）
 - [x] A-3 总类图与类字典（7 个业务类 + 4 个枚举、6 条关联含 1 条聚合、4 条枚举依赖；含 CreditScoreLog 信用分流水与 ReservationStatus.NO_SHOW；StarUML 工程 `docs/uml/实验3_总类图.uml`，报告 md + docx，图见 `docs/assets/实验3_总类图.jpg`）
-- [ ] A-4 状态图
+- [x] A-4 状态图：座位状态图（AVAILABLE/RESERVED/OCCUPIED/CLOSED 四状态 + 三条转维修分支）与预约记录状态图（BOOKED/CHECKED_IN/CHECKED_OUT/CANCELLED/NO_SHOW 五状态 + 三条出口）；StarUML 工程 `docs/uml/实验5_状态图.uml`，报告 md + docx，图见 `docs/assets/实验5_座位状态图.jpg`、`docs/assets/实验5_预约记录状态图.jpg`
 - [ ] A-5 实体类与 DAO
 - [ ] A-6 Service 业务逻辑
