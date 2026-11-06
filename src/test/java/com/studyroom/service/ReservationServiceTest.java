@@ -185,6 +185,35 @@ class ReservationServiceTest {
         assertEquals(SeatStatus.AVAILABLE, seatDao.findByNo("A01").getStatus());
     }
 
+    @Test
+    void listReservationsFiltersByStudentAndOrdersByStartDesc() {
+        Reservation morning = book("A02", LocalTime.of(8, 0), LocalTime.of(10, 0));
+        Reservation noon = book("A01", TEN, TWELVE);
+
+        List<Reservation> mine = service.listReservations("20240001");
+        assertEquals(2, mine.size());
+        assertEquals(noon.getResNo(), mine.get(0).getResNo());
+        assertEquals(morning.getResNo(), mine.get(1).getResNo());
+
+        assertEquals(0, service.listReservations("20240002").size());
+        assertEquals(2, service.listAllReservations().size());
+        assertEquals("PARAM", assertThrows(BusinessException.class, () -> service.listReservations(" ")).getCode());
+    }
+
+    @Test
+    void listSeatedReturnsOnlyOpenRecords() {
+        Reservation r = book("A01", TEN, TWELVE);
+        assertTrue(service.listSeated().isEmpty());
+
+        service.signIn(r.getResNo());
+        assertEquals(1, service.listSeated().size());
+        assertEquals(r.getResNo(), service.listSeated().get(0).getResNo());
+
+        service.signOut(r.getResNo(), LocalTime.of(11, 50));
+        assertTrue(service.listSeated().isEmpty());
+        assertEquals(1, checkinRecordDao.findAll().size());
+    }
+
     private Reservation book(String seatNo, LocalTime start, LocalTime end) {
         Student student = studentDao.findByStudentId("20240001");
         return service.reserve(seatNo, student, TOMORROW, start, end);

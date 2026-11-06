@@ -16,6 +16,15 @@ public interface ReservationService {
     /** 查询指定日期与时段内某区域的可用座位，typeName 传 null 表示不限区域。 */
     List<Seat> listAvailableSeats(LocalDate date, LocalTime start, LocalTime end, String typeName);
 
+    /** 查询某个学生的全部预约记录，按预约开始时间倒序；studentId 为空时抛 PARAM。 */
+    List<Reservation> listReservations(String studentId);
+
+    /** 查询全部预约记录，按预约开始时间倒序，供管理员界面展示。 */
+    List<Reservation> listAllReservations();
+
+    /** 查询当前在座记录（并已签到未签退，即 actualEnd 为空的签到记录）。 */
+    List<CheckinRecord> listSeated();
+
     /** 在线预约：信用分 >= 80、座位可用且时段不冲突时生成预约记录。 */
     Reservation reserve(String seatNo, Student student, LocalDate date, LocalTime start, LocalTime end)
             throws BusinessException;

@@ -5,7 +5,7 @@
 > **作者**：易雨杰（成员A）  
 > **创建时间**：2026-11-06  
 > **版本**：v1.1（签到即落盘、签退回填；`AuthService` 无状态说明）  
-> **关联**：`docs/contract/接口契约.md` v1.0 第六节、`docs/development/A6-实现记录.md`
+> **关联**：`docs/contract/接口契约.md` v1.1 第六节、`docs/development/A6-实现记录.md`
 
 ## 一、怎么拿到 Service
 
@@ -26,6 +26,9 @@ AuthService authService = ServiceFactory.getAuthService();
 | 方法 | 入参 | 返回 | 界面用途 |
 |---|---|---|---|
 | `listAvailableSeats(date, start, end, typeName)` | `LocalDate`、`LocalTime`、`LocalTime`、区域名或 `null` | `List<Seat>` | 预约页座位列表；`typeName` 传 `null` 表示不限区域 |
+| `listReservations(studentId)` | 学号 | `List<Reservation>` | 学生端「我的预约」表格，按开始时间倒序 |
+| `listAllReservations()` | — | `List<Reservation>` | 管理端「全部预约」表格，按开始时间倒序 |
+| `listSeated()` | — | `List<CheckinRecord>` | 「在座名单」表格，只含已签到未签退的记录 |
 | `reserve(seatNo, student, date, start, end)` | 座位号、`Student`（可传当前登录学生）、日期、起止时间 | `Reservation`（含 `resNo`） | 提交预约成功后弹窗展示预约号 |
 | `cancelReservation(resNo)` | 预约号 | `Reservation`（状态 `CANCELLED`） | 我的预约列表的取消按钮 |
 | `signIn(resNo)` | 预约号 | `Reservation`（状态 `CHECKED_IN`） | 值班管理员签到登记 |

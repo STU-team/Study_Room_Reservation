@@ -8,6 +8,7 @@ import com.studyroom.util.CsvStore;
 import com.studyroom.util.DataInitializer;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +49,19 @@ public class CsvCheckinRecordDao implements CheckinRecordDao {
         List<List<String>> rows = store.all();
         int i = store.indexOf(rows, 1, resNo);
         if (i < 0) return null;
-        List<String> row = rows.get(i);
+        return toRecord(rows.get(i));
+    }
+
+    @Override
+    public synchronized List<CheckinRecord> findAll() {
+        List<CheckinRecord> result = new ArrayList<>();
+        for (List<String> row : store.data()) {
+            result.add(toRecord(row));
+        }
+        return result;
+    }
+
+    private CheckinRecord toRecord(List<String> row) {
         CheckinRecord r = new CheckinRecord(row.get(0), CsvMapper.time(row.get(2)), CsvMapper.time(row.get(3)),
                 CsvMapper.integer(row.get(4)));
         r.setResNo(row.get(1));

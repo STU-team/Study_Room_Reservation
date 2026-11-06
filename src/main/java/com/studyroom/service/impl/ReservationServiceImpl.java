@@ -68,6 +68,30 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    public List<Reservation> listReservations(String studentId) {
+        if (studentId == null || studentId.isBlank()) throw new BusinessException("PARAM", "学号不能为空");
+        List<Reservation> result = new ArrayList<>();
+        for (Reservation r : reservationDao.findAll()) {
+            if (studentId.equals(r.getStudentId())) result.add(r);
+        }
+        return sortByStartDesc(result);
+    }
+
+    @Override
+    public List<Reservation> listAllReservations() {
+        return sortByStartDesc(reservationDao.findAll());
+    }
+
+    @Override
+    public List<CheckinRecord> listSeated() {
+        List<CheckinRecord> result = new ArrayList<>();
+        for (CheckinRecord record : checkinRecordDao.findAll()) {
+            if (record.getActualEnd() == null) result.add(record);
+        }
+        return result;
+    }
+
+    @Override
     public Reservation reserve(String seatNo, Student student, LocalDate date, LocalTime start, LocalTime end) {
         if (seatNo == null || student == null || date == null || start == null || end == null) {
             throw new BusinessException("PARAM", "预约信息不完整");
@@ -200,8 +224,16 @@ public class ReservationServiceImpl implements ReservationService {
         return reservation;
     }
 
-    /** 同一座位在 [from, to) 内是否存在占用中的预约。 */
-    private boolean occupied(List<Reservation> reservations, String seatNo, Date from, Date to) {
+    /** 按预约开始时间倒序，方便界面把最近的排在最前。 */
+    private List<Reservation> sortByStartDesc(List<Reservation> reservations) {
+        reservations.sort((a, b) -> {
+            if (a.getStartTime() == null || b.getStartTime() == null) return 0;
+            return b.getStartTime().compareTo(a.getStartTime());
+        });
+        return reservations;
+    }
+
+    /** 同一座位在 [from, to) 内是否存在占用中的预约。 */    private boolean occupied(List<Reservation> reservations, String seatNo, Date from, Date to) {
         for (Reservation r : reservations) {
             if (r.getSeatNo() == null || !r.getSeatNo().equals(seatNo)) continue;
             if (r.getStatus() != ReservationStatus.BOOKED && r.getStatus() != ReservationStatus.CHECKED_IN) continue;
