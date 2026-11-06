@@ -5,7 +5,7 @@
 > **仓库**：https://github.com/STU-team/Study_Room_Reservation
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
-> **当前版本**：v0.7（A-4 状态图完成：座位状态图 + 预约记录状态图）
+> **当前版本**：v0.8（A-5 实体与 CSV 持久层完成）
 > **当前开发分支**：`dev-A`/`dev-B-new`
 
 ## 一、项目简介
@@ -57,6 +57,7 @@ Study_Room_Reservation/
 │   ├── contract/               # 接口契约等团队约定文档
 │   ├── assets/                 # 报告用图（UML 导出图、界面截图）
 │   ├── uml/                    # StarUML 工程文件（.uml，模型源文件）
+│   ├── development/            # 代码实现记录（A5-实现记录 等）
 │   ├── 工作记录.md              # 开发过程工作记录
 │   └── 进度看板.md              # A/B 任务状态与截图清单
 ├── data/                       # 本地数据文件（座位、预约记录等 CSV）
@@ -89,6 +90,8 @@ Study_Room_Reservation/
 | [A-3 到后续 B 对接说明](docs/contract/对接-A3到后续B.md) | 交给成员B 的类图口径、评审要点与后续任务影响 |
 | [实验5报告（Markdown）](docs/reports/实验5-状态图.md) | UML 状态图（自习室预约管理子系统）：座位状态图与预约记录状态图 |
 | [A-4 到后续 B 对接说明](docs/contract/对接-A4到后续B.md) | 交给成员B 的状态口径、评审要点与后续任务影响 |
+| [A-5 实现记录](docs/development/A5-实现记录.md) | 实体、七张 CSV 持久层、字段映射约定与验证结果 |
+| [A-5 到后续 A-6 与 B 对接说明](docs/contract/对接-A5到后续A6与B.md) | 持久化口径、A-6 编码约定、预约号格式与异常约定 |
 
 ## 七、Git 协同规范
 
@@ -109,5 +112,5 @@ Study_Room_Reservation/
 - [x] B-1 实验2 系统用例图与 12 条用例叙述（PR #7、#8 已合并）
 - [x] A-3 总类图与类字典（7 个业务类 + 4 个枚举、6 条关联含 1 条聚合、4 条枚举依赖；含 CreditScoreLog 信用分流水与 ReservationStatus.NO_SHOW；StarUML 工程 `docs/uml/实验3_总类图.uml`，报告 md + docx，图见 `docs/assets/实验3_总类图.jpg`）
 - [x] A-4 状态图：座位状态图（AVAILABLE/RESERVED/OCCUPIED/CLOSED 四状态 + 三条转维修分支）与预约记录状态图（BOOKED/CHECKED_IN/CHECKED_OUT/CANCELLED/NO_SHOW 五状态 + 三条出口）；StarUML 工程 `docs/uml/实验5_状态图.uml`，报告 md + docx，图见 `docs/assets/实验5_座位状态图.jpg`、`docs/assets/实验5_预约记录状态图.jpg`
-- [ ] A-5 实体类与 DAO
+- [x] A-5 实体类与 CSV 持久层：4 个枚举、7 个实体、CSV 基础设施（`CsvUtil`/`CsvMapper`/`DataInitializer`），七张表 DAO 全覆盖（契约第七节 5 个接口实现 + `CsvCreditScoreLogDao`/`CsvSeatTypeDao`），`mvn test` 19 个用例通过；接口契约 v0.6 保持原文，类图主键与 CSV 业务编号的字段落差由 DAO 映射消化（见 `docs/development/A5-实现记录.md`）
 - [ ] A-6 Service 业务逻辑
