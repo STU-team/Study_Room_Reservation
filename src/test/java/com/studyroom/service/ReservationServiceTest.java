@@ -171,6 +171,20 @@ class ReservationServiceTest {
         assertEquals(0, service.handleNoShow(LocalDateTime.of(TOMORROW, LocalTime.of(11, 20))));
     }
 
+    @Test
+    void reserveRejectedWhenDateOutsideWindow() {
+        Student student = studentDao.findByStudentId("20240001");
+
+        BusinessException past = assertThrows(BusinessException.class,
+                () -> service.reserve("A01", student, LocalDate.now().minusDays(1), TEN, TWELVE));
+        assertEquals("PARAM", past.getCode());
+
+        BusinessException far = assertThrows(BusinessException.class,
+                () -> service.reserve("A01", student, LocalDate.now().plusDays(8), TEN, TWELVE));
+        assertEquals("PARAM", far.getCode());
+        assertEquals(SeatStatus.AVAILABLE, seatDao.findByNo("A01").getStatus());
+    }
+
     private Reservation book(String seatNo, LocalTime start, LocalTime end) {
         Student student = studentDao.findByStudentId("20240001");
         return service.reserve(seatNo, student, TOMORROW, start, end);

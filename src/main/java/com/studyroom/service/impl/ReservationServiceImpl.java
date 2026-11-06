@@ -31,6 +31,7 @@ import java.util.Locale;
 public class ReservationServiceImpl implements ReservationService {
     private static final int MIN_CREDIT = 80;
     private static final int DEADLINE_MINUTES = 15;
+    private static final int MAX_AHEAD_DAYS = 7;
     private static final int NO_SHOW_PENALTY = -5;
     private static final int LATE_PENALTY = -1;
 
@@ -70,6 +71,11 @@ public class ReservationServiceImpl implements ReservationService {
     public Reservation reserve(String seatNo, Student student, LocalDate date, LocalTime start, LocalTime end) {
         if (seatNo == null || student == null || date == null || start == null || end == null) {
             throw new BusinessException("PARAM", "预约信息不完整");
+        }
+        LocalDate today = LocalDate.now();
+        if (date.isBefore(today)) throw new BusinessException("PARAM", "不能预约过去的日期");
+        if (date.isAfter(today.plusDays(MAX_AHEAD_DAYS))) {
+            throw new BusinessException("PARAM", "只能预约 7 天内的日期");
         }
         Student current = studentDao.findByStudentId(student.getStudentId());
         if (current == null) throw new BusinessException("STUDENT_NOT_FOUND", "学生档案不存在：" + student.getStudentId());

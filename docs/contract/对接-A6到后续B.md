@@ -5,7 +5,7 @@
 > **作者**：易雨杰（成员A）  
 > **创建时间**：2026-11-06  
 > **版本**：v1.1（签到即落盘、签退回填；`AuthService` 无状态说明）  
-> **关联**：`docs/contract/接口契约.md` v0.9 第六节、`docs/development/A6-实现记录.md`
+> **关联**：`docs/contract/接口契约.md` v1.0 第六节、`docs/development/A6-实现记录.md`
 
 ## 一、怎么拿到 Service
 
