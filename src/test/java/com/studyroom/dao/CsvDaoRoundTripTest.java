@@ -15,7 +15,6 @@ import com.studyroom.entity.ReservationStatus;
 import com.studyroom.entity.Role;
 import com.studyroom.entity.Seat;
 import com.studyroom.entity.SeatStatus;
-import com.studyroom.entity.Student;
 import com.studyroom.entity.User;
 import com.studyroom.util.CsvUtil;
 import com.studyroom.util.DataInitializer;

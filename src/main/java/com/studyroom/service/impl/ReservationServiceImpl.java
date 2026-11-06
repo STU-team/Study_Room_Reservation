@@ -223,7 +223,8 @@ public class ReservationServiceImpl implements ReservationService {
     private void deduct(String studentId, int delta, CreditChangeReason reason, Long reservationId) {
         Student student = studentDao.findByStudentId(studentId);
         if (student == null) throw new BusinessException("STUDENT_NOT_FOUND", "学生档案不存在：" + studentId);
-        student.setCreditScore(student.getCreditScore() + delta);
+        int score = student.getCreditScore() == null ? 0 : student.getCreditScore();
+        student.setCreditScore(score + delta);
         studentDao.update(student);
         creditScoreLogDao.save(new CreditScoreLog(null, studentId, reservationId, delta, reason, new Date()));
     }

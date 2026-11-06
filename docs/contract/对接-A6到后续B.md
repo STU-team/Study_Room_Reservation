@@ -4,7 +4,7 @@
 > **课程**：CST9301 软件工程  
 > **作者**：易雨杰（成员A）  
 > **创建时间**：2026-11-06  
-> **版本**：v1.0  
+> **版本**：v1.1（签到即落盘、签退回填；`AuthService` 无状态说明）  
 > **关联**：`docs/contract/接口契约.md` v0.9 第六节、`docs/development/A6-实现记录.md`
 
 ## 一、怎么拿到 Service
@@ -76,6 +76,6 @@ AuthService authService = ServiceFactory.getAuthService();
 
 1. **爽约扫描由前端触发**：A 侧只提供 `handleNoShow(now)` 纯方法，不在 Service 里起后台线程。B 在界面启动后立即调一次，再用 `javax.swing.Timer` 每 60 分钟调一次；界面关闭时定时器随之停止。这样定时器生命周期跟着界面走，不会出现窗口关了线程还在写 CSV 的情况。
 2. **签到即落盘，签退回填**（契约 v0.9）：`signIn` 时立刻写一条 `CheckinRecord`（`actualStart` = 签到时刻，`actualEnd` 为空，`penalty` = 0），`signOut` 时用 `CheckinRecordDao.update` 回填 `actualEnd` 与 `penalty`，`recordNo` 不变。所以“实时在座名单”可以直接查 `checkin_records.csv` 中 `actualEnd` 为空的行，B 不必再自己维护内存集合。
-3. `AuthService` 只校验用户名和密码，未做会话超时；`AuthServiceImpl.currentUser()` 是契约外的实现类便利方法，界面可用，接口层面不承诺。
+3. **`AuthService` 无状态**：`login` 返回 `User`，请界面自己保存这个引用用于角色渲染与页面切换；`logout()` 只承载登出语义（Service 内不存会话），界面清空自己保存的当前用户即可。未做会话超时与权限分级。
 
 > 上述两条由 A 提出，B 若在评审中不认可，按 `CONTRACT-CHANGE` 流程调整后再改文档与代码。

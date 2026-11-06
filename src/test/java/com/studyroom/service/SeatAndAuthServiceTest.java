@@ -62,13 +62,15 @@ class SeatAndAuthServiceTest {
     }
 
     @Test
-    void loginSucceedsThenLogoutClearsSession() {
-        User user = authService.login("admin", "123456");
-        assertEquals(Role.SYS_ADMIN, user.getRole());
-        assertEquals(user, ((com.studyroom.service.impl.AuthServiceImpl) authService).currentUser());
+    void loginReturnsUserAndLogoutKeepsServiceStateless() {
+        User admin = authService.login("admin", "123456");
+        assertEquals(Role.SYS_ADMIN, admin.getRole());
 
         authService.logout();
-        assertNull(((com.studyroom.service.impl.AuthServiceImpl) authService).currentUser());
+
+        User duty = authService.login("duty", "123456");
+        assertEquals(Role.DUTY_ADMIN, duty.getRole());
+        assertEquals("admin", admin.getUsername());
     }
 
     @Test
