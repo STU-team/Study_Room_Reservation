@@ -93,10 +93,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public Reservation findReservation(String resNo) {
-        if (resNo == null || resNo.isBlank()) throw new BusinessException("PARAM", "预约号不能为空");
-        Reservation reservation = reservationDao.findByNo(resNo);
-        if (reservation == null) throw new BusinessException("NOT_FOUND", "预约记录不存在：" + resNo);
-        return reservation;
+        return require(resNo);
     }
 
     @Override
@@ -227,10 +224,11 @@ public class ReservationServiceImpl implements ReservationService {
         return handled;
     }
 
+    /** 取预约记录并校验：空号抛 PARAM，查不到抛 NOT_FOUND。 */
     private Reservation require(String resNo) {
         if (resNo == null || resNo.isBlank()) throw new BusinessException("PARAM", "预约号不能为空");
         Reservation reservation = reservationDao.findByNo(resNo);
-        if (reservation == null) throw new BusinessException("NOT_FOUND", "预约不存在：" + resNo);
+        if (reservation == null) throw new BusinessException("NOT_FOUND", "预约记录不存在：" + resNo);
         return reservation;
     }
 
@@ -244,7 +242,8 @@ public class ReservationServiceImpl implements ReservationService {
         return sorted;
     }
 
-    /** 同一座位在 [from, to) 内是否存在占用中的预约。 */    private boolean occupied(List<Reservation> reservations, String seatNo, Date from, Date to) {
+    /** 同一座位在 [from, to) 内是否存在占用中的预约。 */
+    private boolean occupied(List<Reservation> reservations, String seatNo, Date from, Date to) {
         for (Reservation r : reservations) {
             if (r.getSeatNo() == null || !r.getSeatNo().equals(seatNo)) continue;
             if (r.getStatus() != ReservationStatus.BOOKED && r.getStatus() != ReservationStatus.CHECKED_IN) continue;
