@@ -44,6 +44,7 @@
 5. **信用分流水与扣分是同一步**：`handleNoShow` 扣 5 分写 `NO_SHOW`，`checkOut` 超时扣 1 分写 `LATE_CHECKOUT`，两笔都用 `CsvCreditScoreLogDao.save` 落盘，`reservationId` 填对应预约的 Long 主键。
 6. **`CreditScoreLogDao`、`SeatTypeDao` 已进契约 v0.7**：两个接口已在第七节声明，实现类分别 implements，A-6 直接按接口注入即可。
 7. **`Reservation.createTime` 已落盘（契约 v0.8）**：`reservations.csv` 末位新增 `createTime` 列，`save` 时若实体未设值则取 `startTime` 写入，读取原样还原；A-6 做“我的预约”列表按提交时间排序时可直接用 `Reservation.getCreateTime()`。
+8. **构造顺序**：`CsvSeatDao`、`CsvStudentDao`、`CsvUserDao`、`CsvCheckinRecordDao`、`CsvCreditScoreLogDao` 只传 `dataDirectory`；`CsvReservationDao(dataDirectory, studentDao)` 依赖学生档案写姓名/电话快照，`CsvSeatTypeDao(dataDirectory, seatDao)` 依赖座位表统计 `seatCount`。建议 A-6 用一个装配类按此顺序 new 一次并向下传递，不要在每个 Service 里各 new 一套（多实例会各持一份文件句柄）。
 
 ## 四、对 B 后续工作的影响
 
