@@ -1,0 +1,5 @@
+seatNo,typeName,status
+A01,靠窗区,AVAILABLE
+A02,靠窗区,RESERVED
+B01,沙发区,OCCUPIED
+B02,沙发区,CLOSED
