@@ -39,6 +39,8 @@ AuthService authService = ServiceFactory.getAuthService();
 
 时间类型：Service 用 `java.time`（`LocalDate`/`LocalTime`/`LocalDateTime`），界面直接用它；存储层精确到分钟，秒会被截断。
 
+区域下拉框：契约第六节没有单独的区域查询接口，界面可用 `seatService.listAllSeats()` 按 `getRoomName()` 去重生成区域列表（`seat_types.csv` 由持久层维护，Service 层不额外暴露）。
+
 ## 三、异常处理
 
 所有业务失败抛 `BusinessException`，界面捕获后弹窗显示 `getMessage()`，需要分支处理时用 `getCode()`：
