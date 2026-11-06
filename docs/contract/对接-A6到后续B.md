@@ -5,7 +5,7 @@
 > **作者**：易雨杰（成员A）  
 > **创建时间**：2026-11-06  
 > **版本**：v1.0  
-> **关联**：`docs/contract/接口契约.md` v0.8 第六节、`docs/development/A6-实现记录.md`
+> **关联**：`docs/contract/接口契约.md` v0.9 第六节、`docs/development/A6-实现记录.md`
 
 ## 一、怎么拿到 Service
 
@@ -75,7 +75,7 @@ AuthService authService = ServiceFactory.getAuthService();
 ## 六、与 B 的分工约定（已提出，B 确认前可按此实现）
 
 1. **爽约扫描由前端触发**：A 侧只提供 `handleNoShow(now)` 纯方法，不在 Service 里起后台线程。B 在界面启动后立即调一次，再用 `javax.swing.Timer` 每 60 分钟调一次；界面关闭时定时器随之停止。这样定时器生命周期跟着界面走，不会出现窗口关了线程还在写 CSV 的情况。
-2. **签到记录在签退时落盘**：`CheckinRecordDao` 只有 `save`、没有 `update`，所以签退时一次性写入完整记录（`actualStart`/`actualEnd`/`penalty`），签到到签退之间 `checkin_records` 里没有对应行，不能靠查表出“实时在座名单”。B 若只需界面展示在座状态，用内存集合（签到加入、签退移除）即可；若确实要持久化实时在座，再单独走 `CONTRACT-CHANGE` 给 `CheckinRecordDao` 加 `update(CheckinRecord)`，不在本次 A-6 范围内。
+2. **签到即落盘，签退回填**（契约 v0.9）：`signIn` 时立刻写一条 `CheckinRecord`（`actualStart` = 签到时刻，`actualEnd` 为空，`penalty` = 0），`signOut` 时用 `CheckinRecordDao.update` 回填 `actualEnd` 与 `penalty`，`recordNo` 不变。所以“实时在座名单”可以直接查 `checkin_records.csv` 中 `actualEnd` 为空的行，B 不必再自己维护内存集合。
 3. `AuthService` 只校验用户名和密码，未做会话超时；`AuthServiceImpl.currentUser()` 是契约外的实现类便利方法，界面可用，接口层面不承诺。
 
 > 上述两条由 A 提出，B 若在评审中不认可，按 `CONTRACT-CHANGE` 流程调整后再改文档与代码。

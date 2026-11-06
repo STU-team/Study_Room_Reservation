@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /** 预约业务实现：按契约第一/二节与 A-4 状态图 R-01~R-05、T-02~T-05 校验与迁移。 */
 public class ReservationServiceImpl implements ReservationService {
@@ -41,8 +39,6 @@ public class ReservationServiceImpl implements ReservationService {
     private final StudentDao studentDao;
     private final CheckinRecordDao checkinRecordDao;
     private final CreditScoreLogDao creditScoreLogDao;
-    /** 签到时刻，签退写记录时回填；进程重启丢失则退回预约开始时间。 */
-    private final Map<String, Date> signedInAt = new ConcurrentHashMap<>();
 
     public ReservationServiceImpl(SeatDao seatDao, ReservationDao reservationDao, StudentDao studentDao,
                                   CheckinRecordDao checkinRecordDao, CreditScoreLogDao creditScoreLogDao) {
@@ -131,7 +127,7 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.checkIn();
         reservationDao.update(reservation);
         setSeatStatus(reservation.getSeatNo(), SeatStatus.OCCUPIED);
-        signedInAt.put(resNo, new Date());
+        checkinRecordDao.save(newRecord(resNo, new Date(), null, 0));
         return reservation;
     }
 
@@ -146,7 +142,6 @@ public class ReservationServiceImpl implements ReservationService {
         if (end.before(reservation.getStartTime())) {
             throw new BusinessException("PARAM", "签退时间不能早于预约开始时间");
         }
-        Date start = signedInAt.getOrDefault(resNo, reservation.getStartTime());
 
         reservation.checkOut();
         reservationDao.update(reservation);
@@ -159,11 +154,15 @@ public class ReservationServiceImpl implements ReservationService {
                     reservation.getReservationId());
         }
 
-        CheckinRecord record = new CheckinRecord(nextRecordNo(), start, end, penalty);
-        record.setResNo(resNo);
-        record.setCreateTime(new Date());
-        checkinRecordDao.save(record);
-        signedInAt.remove(resNo);
+        CheckinRecord record = checkinRecordDao.findByResNo(resNo);
+        if (record == null) {
+            record = newRecord(resNo, reservation.getStartTime(), end, penalty);
+            checkinRecordDao.save(record);
+        } else {
+            record.setActualEnd(end);
+            record.setPenalty(penalty);
+            checkinRecordDao.update(record);
+        }
         return record;
     }
 
@@ -227,6 +226,13 @@ public class ReservationServiceImpl implements ReservationService {
         student.setCreditScore(student.getCreditScore() + delta);
         studentDao.update(student);
         creditScoreLogDao.save(new CreditScoreLog(null, studentId, reservationId, delta, reason, new Date()));
+    }
+
+    private CheckinRecord newRecord(String resNo, Date start, Date end, int penalty) {
+        CheckinRecord record = new CheckinRecord(nextRecordNo(), start, end, penalty);
+        record.setResNo(resNo);
+        record.setCreateTime(new Date());
+        return record;
     }
 
     private String nextRecordNo() {

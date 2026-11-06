@@ -39,7 +39,7 @@
 
 1. **`Reservation` 保存前的必填字段**：`resNo`（可先调 `reservationDao.nextResNo()`）、`studentId`、`seatNo`、`startTime`、`endTime`、`status`。缺任一项 DAO 会抛 `IllegalArgumentException` 或 `DataAccessException`，这是刻意设计，避免写出半条记录。
 2. **预约号格式**：`RES + yyyyMMdd + 三位序号`（如 `RES20261106001`），由 `CsvReservationDao.nextResNo()` 按当天已有最大序号 +1 生成，与契约示例一致。
-3. **同一预约只能有一条签到记录**：`CsvCheckinRecordDao.save` 对重复 `resNo` 直接拒绝，签退再写第二条会失败，A-6 需在签到时就创建记录、签退时只更新内存对象。
+3. **同一预约只能有一条签到记录**：`CsvCheckinRecordDao.save` 对重复 `resNo` 直接拒绝；契约 v0.9 起该 DAO 增加 `update`，A-6 的已实现做法是签到即写一条记录（`actualEnd` 为空），签退时用 `update` 回填结束时间与处罚，不再新增第二条。
 4. **座位状态转移由 Service 校验**：`Seat.updateStatus` 只赋值，`OCCUPIED` 不得直接改 `AVAILABLE`（契约 v0.5 约束）要在 `SeatService` 里判断。
 5. **信用分流水与扣分是同一步**：`handleNoShow` 扣 5 分写 `NO_SHOW`，`checkOut` 超时扣 1 分写 `LATE_CHECKOUT`，两笔都用 `CsvCreditScoreLogDao.save` 落盘，`reservationId` 填对应预约的 Long 主键。
 6. **`CreditScoreLogDao`、`SeatTypeDao` 已进契约 v0.7**：两个接口已在第七节声明，实现类分别 implements，A-6 直接按接口注入即可。

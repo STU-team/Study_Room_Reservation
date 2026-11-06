@@ -144,6 +144,19 @@ class CsvDaoRoundTripTest {
         CheckinRecord duplicate = new CheckinRecord("REC002", at(2026, 11, 6, 8, 3), null, 0);
         duplicate.setResNo("RES20261106001");
         assertThrows(DataAccessException.class, () -> dao.save(duplicate));
+
+        // 签到即落盘后用 update 回填结束时间与处罚，仍是一条记录
+        CheckinRecord open = new CheckinRecord("REC003", at(2026, 11, 6, 8, 5), null, 0);
+        open.setResNo("RES20261106002");
+        dao.save(open);
+        assertNull(dao.findByResNo("RES20261106002").getActualEnd());
+        open.setActualEnd(at(2026, 11, 6, 10, 20));
+        open.setPenalty(1);
+        dao.update(open);
+        CheckinRecord closed = dao.findByResNo("RES20261106002");
+        assertEquals("REC003", closed.getRecordNo());
+        assertNotNull(closed.getActualEnd());
+        assertEquals(1, closed.getPenalty());
     }
 
     @Test

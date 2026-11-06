@@ -33,6 +33,17 @@ public class CsvCheckinRecordDao implements CheckinRecordDao {
     }
 
     @Override
+    public synchronized void update(CheckinRecord r) {
+        List<List<String>> rows = store.all();
+        int i = store.indexOf(rows, 1, r.getResNo());
+        if (i < 0) throw new DataAccessException("签到记录不存在：" + r.getResNo());
+        rows.set(i, List.of(r.getRecordNo(), CsvMapper.text(r.getResNo()),
+                CsvMapper.time(r.getActualStart()), CsvMapper.time(r.getActualEnd()),
+                CsvMapper.text(r.getPenalty()), CsvMapper.time(r.getCreateTime())));
+        store.save(rows);
+    }
+
+    @Override
     public synchronized CheckinRecord findByResNo(String resNo) {
         List<List<String>> rows = store.all();
         int i = store.indexOf(rows, 1, resNo);

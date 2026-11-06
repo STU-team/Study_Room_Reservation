@@ -122,16 +122,22 @@ class ReservationServiceTest {
     }
 
     @Test
-    void signInOccupiesSeatAndSignOutReleases() {
+    void signInWritesRecordAndSignOutUpdatesSameRecord() {
         Reservation r = book("A01", TEN, TWELVE);
         service.signIn(r.getResNo());
 
         assertEquals(ReservationStatus.CHECKED_IN, reservationDao.findByNo(r.getResNo()).getStatus());
         assertEquals(SeatStatus.OCCUPIED, seatDao.findByNo("A01").getStatus());
 
+        CheckinRecord signedIn = checkinRecordDao.findByResNo(r.getResNo());
+        assertNotNull(signedIn);
+        assertNull(signedIn.getActualEnd());
+        assertEquals(0, signedIn.getPenalty());
+
         CheckinRecord record = service.signOut(r.getResNo(), LocalTime.of(11, 50));
+        assertEquals(signedIn.getRecordNo(), record.getRecordNo());
         assertEquals(0, record.getPenalty());
-        assertEquals(r.getResNo(), checkinRecordDao.findByResNo(r.getResNo()).getResNo());
+        assertNotNull(checkinRecordDao.findByResNo(r.getResNo()).getActualEnd());
         assertEquals(SeatStatus.AVAILABLE, seatDao.findByNo("A01").getStatus());
         assertEquals(ReservationStatus.CHECKED_OUT, reservationDao.findByNo(r.getResNo()).getStatus());
     }
