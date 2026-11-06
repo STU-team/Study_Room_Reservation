@@ -2,7 +2,7 @@
 
 > **文件作用**：成员A 把 A-5 的实体定义与实际落盘格式交接给后续开发。A-6 写 Service 时按本文件知道「实体怎么造、DAO 怎么调、字段从哪来」；B 写前端时按本文件知道「界面拿到的是哪些字段、状态值是什么、编号长什么样」。B 评审时对照本文件与 `docs/development/A5-实现记录.md` 即可，不需要再问 A 某个字段存不存。
 > **课程**：CST9301 软件工程　｜　**编写**：易雨杰（成员A，2024611209）　｜　**接收**：叶梅冰（成员B，2024611038）、A-6 编码
-> **日期**：2026-11-06　｜　**版本**：v1.0（首版）　｜　**状态**：A-5 已完成，19 个单元测试通过，待 B 评审
+> **日期**：2026-11-06　｜　**版本**：v1.1（契约 v0.7 补 DAO 接口后同步）　｜　**状态**：A-5 已完成，19 个单元测试通过，待 B 评审
 
 ## 一、A 已经交付什么
 
@@ -13,8 +13,8 @@
 | `src/main/java/com/studyroom/util/CsvUtil.java` | CSV 读写：UTF-8、引号/逗号/换行转义、整表读写、追加、表头校验、原子替换 |
 | `src/main/java/com/studyroom/util/CsvMapper.java` | 日期时间格式 `yyyy-MM-dd HH:mm`、业务编号到 Long 主键的稳定散列 |
 | `src/main/java/com/studyroom/util/DataInitializer.java` | 按契约 v0.6 初始化七张 CSV 表头，不覆盖已有数据 |
-| `src/main/java/com/studyroom/dao/` | 契约第七节 5 个 DAO 接口 + `DataAccessException` |
-| `src/main/java/com/studyroom/dao/impl/` | 7 个 CSV 实现类：`CsvSeatDao`、`CsvReservationDao`、`CsvStudentDao`、`CsvUserDao`、`CsvCheckinRecordDao`、`CsvCreditScoreLogDao`、`CsvSeatTypeDao` |
+| `src/main/java/com/studyroom/dao/` | 契约 v0.7 第七节 7 个 DAO 接口 + `DataAccessException` |
+| 7 个 CSV 实现类：`CsvSeatDao`、`CsvReservationDao`、`CsvStudentDao`、`CsvUserDao`、`CsvCheckinRecordDao`、`CsvCreditScoreLogDao`、`CsvSeatTypeDao` | 七个实现类分别 implements 第七节对应接口，`CsvStore` 统一负责读写与表头校验 |
 | `src/test/java/com/studyroom/` | 4 个测试类共 19 个用例，`mvn test` 全通过 |
 
 ## 二、持久化口径（请 B 重点核对）
@@ -25,7 +25,7 @@
 |---|---|---|
 | `seats.csv` | `seatNo,typeName,status` | `seatId` 由 `seatNo` 稳定散列；`roomName` 与 `typeName` 同义复用 |
 | `seat_types.csv` | `typeName,seatCount` | `seatCount` 是派生值，读取时按 `seats.csv` 实时统计，列值仅冗余 |
-| `reservations.csv` | `resNo,studentName,studentId,phone,seatNo,resDate,startTime,endTime,status` | `reservationId` 由 `resNo` 散列；`createTime` 取 `resDate+startTime`（唯一有损项）；`signInDeadline` 按 `startTime+15 分钟` 还原；学生姓名与电话为写入时快照 |
+| `reservations.csv` | `resNo,studentName,studentId,phone,seatNo,resDate,startTime,endTime,status` | `reservationId` 由 `resNo` 散列；`createTime` 取 `resDate+startTime`（已知限制，无业务使用故不补列）；`signInDeadline` 按 `startTime+15 分钟` 还原；学生姓名与电话为写入时快照 |
 | `students.csv` | `name,studentId,phone,creditScore` | 一一对应，无映射 |
 | `users.csv` | `username,password,role` | `userId` 由 `username` 散列；`name` 读入时取 `username` |
 | `checkin_records.csv` | `recordNo,resNo,actualStart,actualEnd,penalty,createTime` | 一一对应（实体已补 `resNo`、`createTime` 字段） |
@@ -42,7 +42,8 @@
 3. **同一预约只能有一条签到记录**：`CsvCheckinRecordDao.save` 对重复 `resNo` 直接拒绝，签退再写第二条会失败，A-6 需在签到时就创建记录、签退时只更新内存对象。
 4. **座位状态转移由 Service 校验**：`Seat.updateStatus` 只赋值，`OCCUPIED` 不得直接改 `AVAILABLE`（契约 v0.5 约束）要在 `SeatService` 里判断。
 5. **信用分流水与扣分是同一步**：`handleNoShow` 扣 5 分写 `NO_SHOW`，`checkOut` 超时扣 1 分写 `LATE_CHECKOUT`，两笔都用 `CsvCreditScoreLogDao.save` 落盘，`reservationId` 填对应预约的 Long 主键。
-6. **`CreditScoreLogDao` / `SeatTypeDao` 尚未进契约**：目前是独立实现类，A-6 可直接 `new`；是否升级为契约接口待与 B 确认后统一改契约版本。
+6. **`CreditScoreLogDao`、`SeatTypeDao` 已进契约 v0.7**：两个接口已在第七节声明，实现类分别 implements，A-6 直接按接口注入即可。
+7. **`Reservation.createTime` 不落盘**：CSV 无该列，重载后等于 `startTime`。经核对 A-1~A-4，该属性只在 A-3 类图中列出，未被任何用例、活动图、时序图或界面流程使用，本阶段不补列。
 
 ## 四、对 B 后续工作的影响
 

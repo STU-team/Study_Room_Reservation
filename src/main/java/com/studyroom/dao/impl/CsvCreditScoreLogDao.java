@@ -1,5 +1,6 @@
 package com.studyroom.dao.impl;
 
+import com.studyroom.dao.CreditScoreLogDao;
 import com.studyroom.entity.CreditChangeReason;
 import com.studyroom.entity.CreditScoreLog;
 import com.studyroom.util.CsvMapper;
@@ -11,8 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/** 信用分流水读写（契约第七节未声明接口，暂以独立实现类提供）。 */
-public class CsvCreditScoreLogDao {
+/** 信用分流水读写（契约 v0.7 第七节 CreditScoreLogDao 的 CSV 实现）。 */
+public class CsvCreditScoreLogDao implements CreditScoreLogDao {
     private static final List<String> HEADER = DataInitializer.headers().get("credit_score_logs.csv");
     private final CsvStore store;
 
@@ -20,6 +21,7 @@ public class CsvCreditScoreLogDao {
         this.store = new CsvStore(dataDirectory.resolve("credit_score_logs.csv"), HEADER);
     }
 
+    @Override
     public synchronized void save(CreditScoreLog log) {
         List<List<String>> rows = store.all();
         long next = rows.size();  // 行数即下一个自增号，表头占 1 行
@@ -32,6 +34,7 @@ public class CsvCreditScoreLogDao {
         store.save(rows);
     }
 
+    @Override
     public synchronized List<CreditScoreLog> findByStudentId(String studentId) {
         List<CreditScoreLog> list = new ArrayList<>();
         for (List<String> row : store.data()) {
@@ -40,6 +43,7 @@ public class CsvCreditScoreLogDao {
         return list;
     }
 
+    @Override
     public synchronized List<CreditScoreLog> findAll() {
         return store.data().stream().map(this::toLog).toList();
     }

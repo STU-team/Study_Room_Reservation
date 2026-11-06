@@ -5,7 +5,7 @@
 > **仓库**：https://github.com/STU-team/Study_Room_Reservation
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
-> **当前版本**：v0.8（A-5 实体与 CSV 持久层完成）
+> **当前版本**：v0.9（A-5 实体与 CSV 持久层完成，接口契约 v0.7）
 > **当前开发分支**：`dev-A`/`dev-B-new`
 
 ## 一、项目简介
@@ -107,10 +107,12 @@ Study_Room_Reservation/
 - [x] A-1 项目初始化：仓库骨架、README、实验1报告（md + docx）
 - [x] 接口契约 v0.4：免费公共自习室模式，信用分机制，去除费率与费用结算（CONTRACT-CHANGE）
 - [x] 接口契约 v0.5：新增 `ReservationService.handleNoShow`（爽约自动判定）与 `SeatService.updateSeatStatus` 状态流转约束；信用分规则表补签到截止时间（CONTRACT-CHANGE）
+- [x] 接口契约 v0.6：新增 `CreditScoreLog` 信用分流水与 `ReservationStatus.NO_SHOW`；`CreditScoreLog.reservationId` 为 Long、`SeatType.seatCount` 为 `Integer{derived}`（CONTRACT-CHANGE）
+- [x] 接口契约 v0.7：第七节补 `CreditScoreLogDao`、`SeatTypeDao`，接口与第八节七张表一一对应（CONTRACT-CHANGE）
 - [x] A-2 CIM-1 系统用例图（8 个用例、3 个参与者、系统边界）
 - [x] A-2 CIM-2 "在线预约"活动图（学生/系统两泳道、判断与异常分支）
 - [x] B-1 实验2 系统用例图与 12 条用例叙述（PR #7、#8 已合并）
 - [x] A-3 总类图与类字典（7 个业务类 + 4 个枚举、6 条关联含 1 条聚合、4 条枚举依赖；含 CreditScoreLog 信用分流水与 ReservationStatus.NO_SHOW；StarUML 工程 `docs/uml/实验3_总类图.uml`，报告 md + docx，图见 `docs/assets/实验3_总类图.jpg`）
 - [x] A-4 状态图：座位状态图（AVAILABLE/RESERVED/OCCUPIED/CLOSED 四状态 + 三条转维修分支）与预约记录状态图（BOOKED/CHECKED_IN/CHECKED_OUT/CANCELLED/NO_SHOW 五状态 + 三条出口）；StarUML 工程 `docs/uml/实验5_状态图.uml`，报告 md + docx，图见 `docs/assets/实验5_座位状态图.jpg`、`docs/assets/实验5_预约记录状态图.jpg`
-- [x] A-5 实体类与 CSV 持久层：4 个枚举、7 个实体、CSV 基础设施（`CsvUtil`/`CsvMapper`/`DataInitializer`），七张表 DAO 全覆盖（契约第七节 5 个接口实现 + `CsvCreditScoreLogDao`/`CsvSeatTypeDao`），`mvn test` 19 个用例通过；接口契约 v0.6 保持原文，类图主键与 CSV 业务编号的字段落差由 DAO 映射消化（见 `docs/development/A5-实现记录.md`）
+- [x] A-5 实体类与 CSV 持久层：4 个枚举、7 个实体、CSV 基础设施（`CsvUtil`/`CsvMapper`/`CsvStore`/`DataInitializer`），七张表 DAO 全覆盖（契约第七节 7 个接口全部实现），`mvn test` 19 个用例通过；DAO 抽取 `CsvStore` 复用读写与表头校验，类图主键与 CSV 业务编号的字段落差由 `CsvMapper` 稳定映射消化（见 `docs/development/A5-实现记录.md`）
 - [ ] A-6 Service 业务逻辑
