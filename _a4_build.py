@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""生成实验5 UML 状态图 docx（v1.0，座位状态图 + 预约记录状态图）。"""
+"""生成实验5 UML 状态图 docx（v1.0，座位状态图 + 预约记录状态图）。
+注意：docs/reports/实验5-状态图.docx 已由用户手工定稿，禁止重跑本脚本覆盖，仅作初稿与文本备份。"""
 import os
 from docx import Document
 from docx.shared import Pt, Cm
@@ -126,10 +127,9 @@ def figure(path, width_cm, cap):
 para('汕头大学实验报告', '黑体', 18, True, WD_ALIGN_PARAGRAPH.CENTER)
 para('学院：数学与计算机学院         系：计算机系         专业：计算机科学与技术         成绩：________',
      '宋体', 9, False, WD_ALIGN_PARAGRAPH.CENTER)
-para('姓名：易雨杰(2024611209)、叶梅冰(2024611038)   实验时间：2026年11月6日   教师签字：____________',
+para('姓名：易雨杰(2024611209)、叶梅冰(2024611038)   实验时间：2026年10月28日   教师签字：____________',
      '宋体', 9, False, WD_ALIGN_PARAGRAPH.CENTER)
-para('实验5 UML状态图', '黑体', 14, True, WD_ALIGN_PARAGRAPH.CENTER)
-para('（自习室预约管理子系统）', '黑体', 14, True, WD_ALIGN_PARAGRAPH.CENTER)
+para('实验5 UML状态图（自习室预约管理子系统）', '黑体', 14, True, WD_ALIGN_PARAGRAPH.CENTER)
 
 # ================= 一、实验目的 =================
 h1('一、实验目的')

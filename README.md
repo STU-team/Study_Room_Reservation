@@ -87,7 +87,7 @@ Study_Room_Reservation/
 | [A-2 到 B-1 对接说明](docs/contract/对接-A2到B1.md) | 交给成员B 的实验2 输入、命名约定与回传时间 |
 | [实验3报告（Markdown）](docs/reports/实验3-UML类图.md) | UML 类图与类字典，7 业务类 + 4 枚举 |
 | [A-3 到后续 B 对接说明](docs/contract/对接-A3到后续B.md) | 交给成员B 的类图口径、评审要点与后续任务影响 |
-| [实验5报告（Markdown）](docs/reports/实验5-状态图.md) | UML 状态图：座位状态图与预约记录状态图 |
+| [实验5报告（Markdown）](docs/reports/实验5-状态图.md) | UML 状态图（自习室预约管理子系统）：座位状态图与预约记录状态图 |
 | [A-4 到后续 B 对接说明](docs/contract/对接-A4到后续B.md) | 交给成员B 的状态口径、评审要点与后续任务影响 |
 
 ## 七、Git 协同规范
