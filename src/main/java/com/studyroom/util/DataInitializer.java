@@ -50,4 +50,36 @@ public final class DataInitializer {
     public static Map<String, List<String>> headers() {
         return HEADERS;
     }
+
+    /** 首次启动写入示例数据（契约第八节）；某张表已有数据行时跳过该表，不覆盖用户数据。 */
+    public static void seedSamples(Path dataDirectory) throws IOException {
+        if (dataDirectory == null) throw new IllegalArgumentException("数据目录不能为空");
+        seed(dataDirectory, "seats.csv", List.of(
+                List.of("A01", "靠窗区", "AVAILABLE"),
+                List.of("A02", "靠窗区", "AVAILABLE"),
+                List.of("B01", "沙发区", "AVAILABLE"),
+                List.of("B02", "沙发区", "AVAILABLE")));
+        seed(dataDirectory, "seat_types.csv", List.of(
+                List.of("靠窗区", "2"),
+                List.of("沙发区", "2")));
+        seed(dataDirectory, "students.csv", List.of(
+                List.of("张三", "20240001", "13800000000", "100"),
+                List.of("李四", "20240002", "13900000000", "100")));
+        seed(dataDirectory, "users.csv", List.of(
+                List.of("admin", "123456", "SYS_ADMIN"),
+                List.of("duty", "123456", "DUTY_ADMIN")));
+    }
+
+    private static void seed(Path dataDirectory, String file, List<List<String>> samples) throws IOException {
+        Path path = dataDirectory.resolve(file);
+        CsvUtil.ensureHeader(path, HEADERS.get(file));
+        if (CsvUtil.readAll(path).size() <= 1) CsvUtil.writeAll(path, withHeader(file, samples));
+    }
+
+    private static List<List<String>> withHeader(String file, List<List<String>> samples) {
+        List<List<String>> rows = new java.util.ArrayList<>();
+        rows.add(HEADERS.get(file));
+        rows.addAll(samples);
+        return rows;
+    }
 }

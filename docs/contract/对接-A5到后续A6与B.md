@@ -12,7 +12,7 @@
 | `src/main/java/com/studyroom/entity/` | 7 个实体 + 4 个枚举（`Role`、`SeatStatus`、`ReservationStatus`、`CreditChangeReason`） |
 | `src/main/java/com/studyroom/util/CsvUtil.java` | CSV 读写：UTF-8、引号/逗号/换行转义、整表读写、追加、表头校验、原子替换 |
 | `src/main/java/com/studyroom/util/CsvMapper.java` | 日期时间格式 `yyyy-MM-dd HH:mm`、业务编号到 Long 主键的稳定散列 |
-| `src/main/java/com/studyroom/util/DataInitializer.java` | 按契约 v0.6 初始化七张 CSV 表头，不覆盖已有数据 |
+| `src/main/java/com/studyroom/util/DataInitializer.java` | 按契约 v0.8 初始化七张 CSV 表头，不覆盖已有数据；`seedSamples` 提供首次启动示例数据（只填空表，可重复调用） |
 | `src/main/java/com/studyroom/dao/` | 契约 v0.7 第七节 7 个 DAO 接口 + `DataAccessException` |
 | 7 个 CSV 实现类：`CsvSeatDao`、`CsvReservationDao`、`CsvStudentDao`、`CsvUserDao`、`CsvCheckinRecordDao`、`CsvCreditScoreLogDao`、`CsvSeatTypeDao` | 七个实现类分别 implements 第七节对应接口，`CsvStore` 统一负责读写与表头校验 |
 | `src/test/java/com/studyroom/` | 4 个测试类共 19 个用例，`mvn test` 全通过 |
@@ -45,6 +45,7 @@
 6. **`CreditScoreLogDao`、`SeatTypeDao` 已进契约 v0.7**：两个接口已在第七节声明，实现类分别 implements，A-6 直接按接口注入即可。
 7. **`Reservation.createTime` 已落盘（契约 v0.8）**：`reservations.csv` 末位新增 `createTime` 列，`save` 时若实体未设值则取 `startTime` 写入，读取原样还原；A-6 做“我的预约”列表按提交时间排序时可直接用 `Reservation.getCreateTime()`。
 8. **构造顺序**：`CsvSeatDao`、`CsvStudentDao`、`CsvUserDao`、`CsvCheckinRecordDao`、`CsvCreditScoreLogDao` 只传 `dataDirectory`；`CsvReservationDao(dataDirectory, studentDao)` 依赖学生档案写姓名/电话快照，`CsvSeatTypeDao(dataDirectory, seatDao)` 依赖座位表统计 `seatCount`。建议 A-6 用一个装配类按此顺序 new 一次并向下传递，不要在每个 Service 里各 new 一套（多实例会各持一份文件句柄）。
+9. **首次启动示例数据**：`DataInitializer.initialize(dir)` 只建表头，`DataInitializer.seedSamples(dir)` 负责契约第八节的示例数据（4 个座位、2 个区域、2 名学生、`admin`/`duty` 两个账号），只在空表时写入，重复调用无副作用。B-6 演示前调用一次即可，界面就不会是空列表。
 
 ## 四、对 B 后续工作的影响
 

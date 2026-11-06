@@ -183,12 +183,20 @@ class CsvDaoRoundTripTest {
     }
 
     @Test
-    void studentDaoStillWorksAfterOtherDaosTouchSameDirectory() {
-        new CsvSeatDao(tempDir);
+    void daosShareOneDirectoryAndSeedOnlyFillsEmptyTables() throws Exception {
         new CsvCheckinRecordDao(tempDir);
         new CsvCreditScoreLogDao(tempDir);
-        CsvStudentDao dao = new CsvStudentDao(tempDir);
-        assertTrue(dao.findAll().isEmpty());
-        assertNotNull(new CsvUserDao(tempDir));
+        CsvStudentDao studentDao = new CsvStudentDao(tempDir);
+        assertTrue(studentDao.findAll().isEmpty());
+
+        DataInitializer.seedSamples(tempDir);
+        CsvSeatDao seatDao = new CsvSeatDao(tempDir);
+        assertEquals(4, seatDao.findAll().size());
+        assertEquals(2, new CsvSeatTypeDao(tempDir, seatDao).findByTypeName("靠窗区").getSeatCount());
+        assertEquals(Role.SYS_ADMIN, new CsvUserDao(tempDir).findByUsername("admin").getRole());
+
+        // 再次写入示例数据不重复追加，也不覆盖已有数据
+        DataInitializer.seedSamples(tempDir);
+        assertEquals(4, seatDao.findAll().size());
     }
 }
