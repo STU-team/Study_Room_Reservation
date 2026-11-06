@@ -24,7 +24,7 @@
 | 表 | 表头（契约 v0.6 原文） | 关键映射 |
 |---|---|---|
 | `seats.csv` | `seatNo,typeName,status` | `seatId` 由 `seatNo` 稳定散列；`roomName` 与 `typeName` 同义复用 |
-| `seat_types.csv` | `typeName,seatCount` | `seatCount` 是派生值，读取时按 `seats.csv` 实时统计，列值仅冗余 |
+| `seat_types.csv` | `typeName,seatCount` | 区域清单取自本表；`seatCount` 是派生值，读取时按 `seats.csv` 实时统计，列值仅冗余 |
 | `reservations.csv` | `resNo,studentName,studentId,phone,seatNo,resDate,startTime,endTime,status,createTime` | `reservationId` 由 `resNo` 散列；`createTime` 有独立列（契约 v0.8），写入时为空则取 `startTime` 兜底；`signInDeadline` 按 `startTime+15 分钟` 还原；学生姓名与电话为写入时快照 |
 | `students.csv` | `name,studentId,phone,creditScore` | 一一对应，无映射 |
 | `users.csv` | `username,password,role` | `userId` 由 `username` 散列；`name` 读入时取 `username` |

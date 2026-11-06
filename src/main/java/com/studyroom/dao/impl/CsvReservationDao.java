@@ -1,5 +1,6 @@
 package com.studyroom.dao.impl;
 
+import com.studyroom.dao.DataAccessException;
 import com.studyroom.dao.ReservationDao;
 import com.studyroom.dao.StudentDao;
 import com.studyroom.entity.Reservation;
@@ -37,13 +38,12 @@ public class CsvReservationDao implements ReservationDao {
 
     @Override
     public synchronized void save(Reservation r) {
-        boolean has = r.getResNo() != null && !r.getResNo().isBlank();
-        if (!has) r.setResNo(nextResNo());
         if (r.getStudentId() == null || r.getSeatNo() == null || r.getStartTime() == null || r.getEndTime() == null) {
             throw new IllegalArgumentException("预约缺少 studentId/seatNo/startTime/endTime");
         }
         List<List<String>> rows = store.all();
-        if (store.indexOf(rows, 0, r.getResNo()) >= 0) throw new com.studyroom.dao.DataAccessException("预约号已存在：" + r.getResNo());
+        if (r.getResNo() == null || r.getResNo().isBlank()) r.setResNo(nextResNo(rows));
+        if (store.indexOf(rows, 0, r.getResNo()) >= 0) throw new DataAccessException("预约号已存在：" + r.getResNo());
         rows.add(toRow(r));
         store.save(rows);
     }
@@ -66,7 +66,7 @@ public class CsvReservationDao implements ReservationDao {
     public synchronized void update(Reservation r) {
         List<List<String>> rows = store.all();
         int i = store.indexOf(rows, 0, r.getResNo());
-        if (i < 0) throw new com.studyroom.dao.DataAccessException("待更新的预约不存在：" + r.getResNo());
+        if (i < 0) throw new DataAccessException("待更新的预约不存在：" + r.getResNo());
         rows.set(i, toRow(r));
         store.save(rows);
     }
@@ -74,12 +74,17 @@ public class CsvReservationDao implements ReservationDao {
     /** 当天最大序号 +1：RES + yyyyMMdd + 三位（契约示例格式）。 */
     @Override
     public synchronized String nextResNo() {
+        return nextResNo(store.all());
+    }
+
+    /** 复用已读入的整表，避免 save 时重复读盘。 */
+    private String nextResNo(List<List<String>> rows) {
         String prefix = "RES" + new SimpleDateFormat(DATE, Locale.ROOT).format(new Date());
-        int max = store.data().stream()
-                .map(r -> r.get(0))
-                .filter(no -> no.startsWith(prefix))
-                .map(no -> parse(no.substring(prefix.length())))
-                .max(Integer::compare).orElse(0);
+        int max = 0;
+        for (int i = 1; i < rows.size(); i++) {
+            String no = rows.get(i).get(0);
+            if (no.startsWith(prefix)) max = Math.max(max, parse(no.substring(prefix.length())));
+        }
         return prefix + String.format("%03d", max + 1);
     }
 
@@ -103,7 +108,6 @@ public class CsvReservationDao implements ReservationDao {
     }
 
     private Reservation toReservation(List<String> row) {
-        store.requireWidth(row);
         String date = row.get(5);
         String start = row.get(6);
         String end = row.get(7);
@@ -126,7 +130,7 @@ public class CsvReservationDao implements ReservationDao {
         try {
             return new SimpleDateFormat(DATE + " " + TIME, Locale.ROOT).parse(date.trim() + " " + time.trim());
         } catch (Exception e) {
-            throw new com.studyroom.dao.DataAccessException("日期时间格式错误：" + date + " " + time, e);
+            throw new DataAccessException("日期时间格式错误：" + date + " " + time, e);
         }
     }
 }

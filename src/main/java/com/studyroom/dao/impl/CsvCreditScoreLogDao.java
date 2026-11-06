@@ -24,9 +24,11 @@ public class CsvCreditScoreLogDao implements CreditScoreLogDao {
     @Override
     public synchronized void save(CreditScoreLog log) {
         List<List<String>> rows = store.all();
-        long next = rows.size();  // 行数即下一个自增号，表头占 1 行
-        for (int i = 1; i < rows.size(); i++) next = Math.max(next, toLong(rows.get(i).get(0)) + 1);
-        if (log.getLogId() == null) log.setLogId(next);
+        if (log.getLogId() == null) {
+            long max = 0;
+            for (int i = 1; i < rows.size(); i++) max = Math.max(max, toLong(rows.get(i).get(0)));
+            log.setLogId(max + 1);
+        }
         rows.add(List.of(String.valueOf(log.getLogId()), log.getStudentId(),
                 CsvMapper.text(log.getReservationId()), String.valueOf(log.getChangeValue()),
                 log.getReason().name(),

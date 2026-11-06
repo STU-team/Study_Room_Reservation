@@ -3,7 +3,7 @@ package com.studyroom.entity;
 import java.util.Date;
 
 /** 预约记录。时间字段按 A-3 最终类图使用完整日期时间（java.util.Date）。
- * resNo 是契约 v0.6 中面向界面的业务预约号（CSV 主键），与 Long 型 reservationId 并存。 */
+ * resNo 是契约 v0.8 中面向界面的业务预约号（CSV 主键），与 Long 型 reservationId 并存。 */
 public class Reservation {
     private String resNo;
     private String studentId;

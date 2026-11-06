@@ -4,10 +4,9 @@ import com.studyroom.dao.DataAccessException;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
-/** 一张 CSV 表的读写封装：表头锁定、每次操作校验、统一异常。 */
+/** 一张 CSV 表的读写封装：表头锁定、行宽统一校验、统一异常。 */
 public final class CsvStore {
     private final Path file;
     private final List<String> header;
@@ -22,12 +21,17 @@ public final class CsvStore {
         }
     }
 
-    /** 含表头的整表。 */
+    /** 含表头的整表；任何一行字段数与表头不符都立即报错。 */
     public List<List<String>> all() {
         try {
             List<List<String>> rows = CsvUtil.readAll(file);
             if (rows.isEmpty() || !header.equals(rows.get(0))) {
                 throw new DataAccessException("表头与契约不一致：" + file.getFileName());
+            }
+            for (int i = 1; i < rows.size(); i++) {
+                if (rows.get(i).size() != header.size()) {
+                    throw new DataAccessException(file.getFileName() + " 第 " + (i + 1) + " 行字段数与表头不一致");
+                }
             }
             return rows;
         } catch (IOException e) {
@@ -38,7 +42,7 @@ public final class CsvStore {
     /** 不含表头的数据行。 */
     public List<List<String>> data() {
         List<List<String>> rows = all();
-        return new ArrayList<>(rows.subList(1, rows.size()));
+        return rows.subList(1, rows.size());
     }
 
     public void save(List<List<String>> rows) {
@@ -49,20 +53,12 @@ public final class CsvStore {
         }
     }
 
-    /** 在数据行中按某列取值找行号（0 起，对应不含表头的列表）；找不到返回 -1。 */
+    /** 按某列取值找行号（含表头下标），找不到返回 -1。 */
     public int indexOf(List<List<String>> rows, int column, String value) {
+        if (value == null) return -1;
         for (int i = 1; i < rows.size(); i++) {
-            if (value != null && value.equals(rows.get(i).get(column))) {
-                return i;
-            }
+            if (value.equals(rows.get(i).get(column))) return i;
         }
         return -1;
-    }
-
-    /** 行字段数必须与表头一致。 */
-    public void requireWidth(List<String> row) {
-        if (row.size() != header.size()) {
-            throw new DataAccessException("字段数与表头不一致：" + row);
-        }
     }
 }

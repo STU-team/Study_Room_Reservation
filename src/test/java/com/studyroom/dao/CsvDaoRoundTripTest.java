@@ -61,8 +61,12 @@ class CsvDaoRoundTripTest {
         assertThrows(DataAccessException.class,
                 () -> dao.update(new Seat(null, "靠窗区", "C99", SeatStatus.AVAILABLE)));
 
-        CsvSeatTypeDao typeDao = new CsvSeatTypeDao(dao);
+        CsvSeatTypeDao typeDao = new CsvSeatTypeDao(tempDir, dao);
         assertEquals(1, typeDao.findByTypeName("靠窗区").getSeatCount());
+        // seat_types.csv 中的区域即使暂无座位也可见，seatCount 为 0
+        CsvUtil.appendRow(tempDir.resolve("seat_types.csv"), List.of("露台区", "0"));
+        assertEquals(0, new CsvSeatTypeDao(tempDir, dao).findByTypeName("露台区").getSeatCount());
+        assertNull(typeDao.findByTypeName("不存在的区域"));
     }
 
     @Test
