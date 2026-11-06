@@ -41,6 +41,8 @@ AuthService authService = ServiceFactory.getAuthService();
 
 区域下拉框：契约第六节没有单独的区域查询接口，界面可用 `seatService.listAllSeats()` 按 `getRoomName()` 去重生成区域列表（`seat_types.csv` 由持久层维护，Service 层不额外暴露）。
 
+座位复用限制：`seats.csv` 的 `status` 是单值字段，座位被预约后即为 `RESERVED`，`listAvailableSeats` 只返回 `AVAILABLE` 的座位。所以 A01 上午被约走后，下午即使时段不重叠也不会出现在列表里；这是契约表结构限制，演示时别当成 bug，要按时段复用需按 `CONTRACT-CHANGE` 重定座位状态口径。
+
 ## 三、异常处理
 
 所有业务失败抛 `BusinessException`，界面捕获后弹窗显示 `getMessage()`，需要分支处理时用 `getCode()`：
