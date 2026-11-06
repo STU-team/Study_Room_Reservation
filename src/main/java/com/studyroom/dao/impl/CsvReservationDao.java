@@ -27,6 +27,8 @@ public class CsvReservationDao implements ReservationDao {
     private static final List<String> HEADER = DataInitializer.headers().get("reservations.csv");
     private static final int MINUTES_DEADLINE = 15;
     private static final String DATE = "yyyy-MM-dd";
+    /** 预约号只取紧凑日期，RES + yyyyMMdd + 三位序号（契约第一节）。 */
+    private static final String NO_DATE = "yyyyMMdd";
     private static final String TIME = "HH:mm";
     private final CsvStore store;
     private final StudentDao studentDao;
@@ -79,7 +81,7 @@ public class CsvReservationDao implements ReservationDao {
 
     /** 复用已读入的整表，避免 save 时重复读盘。 */
     private String nextResNo(List<List<String>> rows) {
-        String prefix = "RES" + new SimpleDateFormat(DATE, Locale.ROOT).format(new Date());
+        String prefix = "RES" + new SimpleDateFormat(NO_DATE, Locale.ROOT).format(new Date());
         int max = 0;
         for (int i = 1; i < rows.size(); i++) {
             String no = rows.get(i).get(0);
