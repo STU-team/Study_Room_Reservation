@@ -1,0 +1,4 @@
+username,password,role
+admin,123456,SYS_ADMIN
+duty,123456,DUTY_ADMIN
+20240001,123456,STUDENT

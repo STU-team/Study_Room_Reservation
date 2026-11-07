@@ -5,7 +5,7 @@
 > **仓库**：https://github.com/yyj138/Study_Room_Reservation
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
-> **当前版本**：v0.7（实验4 签退活动图定稿，B-2 任务已完成待评审）
+> **当前版本**：v1.7（接口契约 v1.2：补 7 天预约窗口、预约/在座列表查询、预约记录姓名手机号、`StudentService` 与 `findReservation`；按 B 评审修正座位状态图签到迁移、预约快照持久化与示例学生账号；`mvn test` 38 个用例通过。B-2 实验4 签退活动图已合并至 main，PR #11 已合入）
 > **当前开发分支**：`dev-A`/`dev-B-new`
 
 ## 一、项目简介
@@ -57,6 +57,7 @@ Study_Room_Reservation/
 │   ├── contract/               # 接口契约等团队约定文档
 │   ├── assets/                 # 报告用图（UML 导出图、界面截图）
 │   ├── uml/                    # StarUML 工程文件（.uml，模型源文件）
+│   ├── development/            # 代码实现记录（A5-实现记录 等）
 │   ├── 工作记录.md              # 开发过程工作记录
 │   └── 进度看板.md              # A/B 任务状态与截图清单
 ├── data/                       # 本地数据文件（座位、预约记录等 CSV）
@@ -87,6 +88,18 @@ Study_Room_Reservation/
 | [进度看板](docs/进度看板.md) | A/B 任务状态、产出与截图清单 |
 | [CIM 建模说明](docs/reports/CIM建模说明.md) | CIM-1/CIM-2 元素清单、分支条件与实验对应 |
 | [A-2 到 B-1 对接说明](docs/contract/对接-A2到B1.md) | 交给成员B 的实验2 输入、命名约定与回传时间 |
+| [实验3报告（Markdown）](docs/reports/实验3-UML类图.md) | UML 类图与类字典，7 业务类 + 4 枚举 |
+| [A-3 到后续 B 对接说明](docs/contract/对接-A3到后续B.md) | 交给成员B 的类图口径、评审要点与后续任务影响 |
+| [实验5报告（Markdown）](docs/reports/实验5-状态图.md) | UML 状态图（自习室预约管理子系统）：座位状态图与预约记录状态图 |
+| [A-4 到后续 B 对接说明](docs/contract/对接-A4到后续B.md) | 交给成员B 的状态口径、评审要点与后续任务影响 |
+| [A-5 实现记录](docs/development/A5-实现记录.md) | 实体、七张 CSV 持久层、字段映射约定与验证结果 |
+| [A-5 到后续 A-6 与 B 对接说明](docs/contract/对接-A5到后续A6与B.md) | 持久化口径、A-6 编码约定、预约号格式与异常约定 |
+| [A-6 实现记录](docs/development/A6-实现记录.md) | Service 层实现范围、业务规则落点、实现取舍与测试结果 |
+| [A-6 到后续 B 对接说明](docs/contract/对接-A6到后续B.md) | 前端如何获取 Service、方法清单、异常码；B 的开工步骤、三张表列定义与刷新时机、演示注意 |
+| [实验8 版本控制实践记录](docs/reports/实验8-版本控制.md) | Git 分支策略、PR 评审闭环、25 条提交明细与问题处理 |
+| [实验8 报告（Word）](docs/reports/实验8-版本控制.docx) | 提交用版本，版式与实验5 定稿一致 |
+| [A-7 到 A-8 联调清单](docs/contract/对接-A7到A8联调清单.md) | 界面动作对应 Service 方法、12 个异常码提示文案、演示数据用法、验收清单与已知边界 |
+| [演示数据](docs/assets/demo-data/README.md) | 7 个 CSV，覆盖 4 种座位状态与 5 种预约状态，供 A-8 联调与答辩演示 |
 
 ## 七、Git 协同规范
 
@@ -101,11 +114,16 @@ Study_Room_Reservation/
 
 - [x] A-1 项目初始化：仓库骨架、README、实验1报告（md + docx）
 - [x] 接口契约 v0.4：免费公共自习室模式，信用分机制，去除费率与费用结算（CONTRACT-CHANGE）
+- [x] 接口契约 v0.5：新增 `ReservationService.handleNoShow`（爽约自动判定）与 `SeatService.updateSeatStatus` 状态流转约束；信用分规则表补签到截止时间（CONTRACT-CHANGE）
+- [x] 接口契约 v0.6：新增 `CreditScoreLog` 信用分流水与 `ReservationStatus.NO_SHOW`；`CreditScoreLog.reservationId` 为 Long、`SeatType.seatCount` 为 `Integer{derived}`（CONTRACT-CHANGE）
+- [x] 接口契约 v0.7：第七节补 `CreditScoreLogDao`、`SeatTypeDao`，接口与第八节七张表一一对应（CONTRACT-CHANGE）
+- [x] 接口契约 v0.8：`reservations.csv` 补 `createTime` 列，`Reservation.createTime`（预约提交时间）保真可还原（CONTRACT-CHANGE）
 - [x] A-2 CIM-1 系统用例图（8 个用例、3 个参与者、系统边界）
 - [x] A-2 CIM-2 "在线预约"活动图（学生/系统两泳道、判断与异常分支）
-- [x] B-1 实验2 系统用例图与 12 条用例叙述（PR #7、#8 已合并）
 - [x] A-3 总类图与类字典（7 个业务类 + 4 个枚举、6 条关联含 1 条聚合、4 条枚举依赖；含 CreditScoreLog 信用分流水与 ReservationStatus.NO_SHOW；StarUML 工程 `docs/uml/实验3_总类图.uml`，报告 md + docx，图见 `docs/assets/实验3_总类图.jpg`）
-- [x] B-2 实验4 "值班管理员签退"泳道活动图与实验4报告（包含异常分支与信用分判定，md + docx 已落盘）
-- [ ] A-4 状态图
-- [ ] A-5 实体类与 DAO
-- [ ] A-6 Service 业务逻辑
+- [x] A-4 状态图：座位状态图（AVAILABLE/RESERVED/OCCUPIED/CLOSED 四状态 + 三条转维修分支，签到登记从 RESERVED 出发）与预约记录状态图（BOOKED/CHECKED_IN/CHECKED_OUT/CANCELLED/NO_SHOW 五状态 + 三条出口）；StarUML 工程 `docs/uml/实验5_状态图.uml`，报告 md + docx，图见 `docs/assets/实验5_座位状态图.jpg`、`docs/assets/实验5_预约记录状态图.jpg`
+- [x] A-5 实体类与 CSV 持久层：4 个枚举、7 个实体、CSV 基础设施（`CsvUtil`/`CsvMapper`/`CsvStore`/`DataInitializer`），七张表 DAO 全覆盖（契约第七节 7 个接口全部实现）；七张表字段映射无有损（`createTime` 已按契约 v0.8 补列），类图主键与 CSV 业务编号的落差由 `CsvMapper` 稳定映射消化，预约姓名与手机号为预约时刻快照（见 `docs/development/A5-实现记录.md`）
+- [x] A-6 Service 业务逻辑：`ReservationService`（查询可用座位、预约、取消、签到、签退、爽约扫描、预约/在座列表与按号查询）、`SeatService`（座位列表/查询/状态更新）、`AuthService`（登录/登出）、`StudentService`（学生档案与信用分）四个接口与实现，`ServiceFactory` 统一装配；`BusinessException` 带错误码，`DateTimes` 负责 `java.time` 与 `Date` 互转；签到即写 `CheckinRecord`、签退用 `CheckinRecordDao.update` 回填（契约 v0.9），预约窗口限制为 7 天内（v1.0），`listReservations`/`listAllReservations`/`listSeated`/`findReservation` 与 `Reservation.studentName`/`phone`（v1.1、v1.2）；`mvn test` 38 个用例通过（见 `docs/development/A6-实现记录.md`、`docs/contract/对接-A6到后续B.md`）
+- [x] A-7 实验8 版本控制记录：分支策略（`dev-A` 单分支长期复用）、提交规范（`A-任务号:` 前缀、禁 emoji）、PR 评审闭环与 25 条提交明细表，附终端 `git log --graph` 分支拓扑截图 `docs/assets/A7_git_graph.png` 与 PR #12 页面截图 `docs/assets/A7_pr_screenshot.png`（见 `docs/reports/实验8-版本控制.md` 与同名 docx）
+- [x] B-1 实验2 系统用例图与 12 条用例叙述（PR #7、#8 已合并）
+- [x] B-2 实验4 "值班管理员签退"泳道活动图与实验4报告（含异常分支与信用分判定，md + docx 已落盘；PR #11 已合并）
