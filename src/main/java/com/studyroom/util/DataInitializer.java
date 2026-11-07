@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** 按接口契约 v0.8 初始化七张 CSV 的表头，不覆盖已存在的数据文件。 */
+/** 按接口契约 v1.2 初始化七张 CSV 的表头，不覆盖已存在的数据文件。 */
 public final class DataInitializer {
     private static final Map<String, List<String>> HEADERS = createHeaders();
 
@@ -67,7 +67,9 @@ public final class DataInitializer {
                 List.of("李四", "20240002", "13900000000", "100")));
         seed(dataDirectory, "users.csv", List.of(
                 List.of("admin", "123456", "SYS_ADMIN"),
-                List.of("duty", "123456", "DUTY_ADMIN")));
+                List.of("duty", "123456", "DUTY_ADMIN"),
+                List.of("20240001", "123456", "STUDENT"),
+                List.of("20240002", "123456", "STUDENT")));
     }
 
     private static void seed(Path dataDirectory, String file, List<List<String>> samples) throws IOException {

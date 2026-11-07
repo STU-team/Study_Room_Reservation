@@ -2,7 +2,7 @@
 
 > **文件作用**：成员A 把 A-5 的实体定义与实际落盘格式交接给后续开发。A-6 写 Service 时按本文件知道「实体怎么造、DAO 怎么调、字段从哪来」；B 写前端时按本文件知道「界面拿到的是哪些字段、状态值是什么、编号长什么样」。B 评审时对照本文件与 `docs/development/A5-实现记录.md` 即可，不需要再问 A 某个字段存不存。
 > **课程**：CST9301 软件工程　｜　**编写**：易雨杰（成员A，2024611209）　｜　**接收**：叶梅冰（成员B，2024611038）、A-6 编码
-> **日期**：2026-11-06　｜　**版本**：v1.3（补契约 v0.9 `CheckinRecordDao.update` 后同步签到记录一条的说明）　｜　**状态**：A-5 已完成，19 个单元测试通过，待 B 评审
+> **日期**：2026-11-06　｜　**版本**：v1.4（按 B 评审意见修正：契约版本引用升 v1.2；补 `toRow` 快照优先取实体值、`seedSamples` 增学生登录账号）　｜　**状态**：A-5 已完成，19 个单元测试通过，B 已评审确认
 
 ## 一、A 已经交付什么
 
@@ -12,20 +12,20 @@
 | `src/main/java/com/studyroom/entity/` | 7 个实体 + 4 个枚举（`Role`、`SeatStatus`、`ReservationStatus`、`CreditChangeReason`） |
 | `src/main/java/com/studyroom/util/CsvUtil.java` | CSV 读写：UTF-8、引号/逗号/换行转义、整表读写、追加、表头校验、原子替换 |
 | `src/main/java/com/studyroom/util/CsvMapper.java` | 日期时间格式 `yyyy-MM-dd HH:mm`、业务编号到 Long 主键的稳定散列 |
-| `src/main/java/com/studyroom/util/DataInitializer.java` | 按契约 v0.8 初始化七张 CSV 表头，不覆盖已有数据；`seedSamples` 提供首次启动示例数据（只填空表，可重复调用） |
+| `src/main/java/com/studyroom/util/DataInitializer.java` | 按契约 v1.2 初始化七张 CSV 表头，不覆盖已有数据；`seedSamples` 提供首次启动示例数据（只填空表，可重复调用），含座位 A01/A02/B01/B02、学生张三/李四，以及 `admin`/`duty`/`20240001`/`20240002` 四个登录账号 |
 | `src/main/java/com/studyroom/dao/` | 契约 v0.7 第七节 7 个 DAO 接口 + `DataAccessException` |
 | 7 个 CSV 实现类：`CsvSeatDao`、`CsvReservationDao`、`CsvStudentDao`、`CsvUserDao`、`CsvCheckinRecordDao`、`CsvCreditScoreLogDao`、`CsvSeatTypeDao` | 七个实现类分别 implements 第七节对应接口，`CsvStore` 统一负责读写与表头校验 |
 | `src/test/java/com/studyroom/` | 4 个测试类共 19 个用例，`mvn test` 全通过 |
 
 ## 二、持久化口径（请 B 重点核对）
 
-接口契约 v0.6 未做任何修改，CSV 表头严格按第八节。类图的主键字段与 CSV 业务编号字段之间的落差，全部在 DAO 内映射消化：
+接口契约已升级至 v1.2，CSV 表头严格按第八节当前版本。类图的主键字段与 CSV 业务编号字段之间的落差，全部在 DAO 内映射消化：
 
-| 表 | 表头（契约 v0.6 原文） | 关键映射 |
+| 表 | 表头（契约 v1.2 原文） | 关键映射 |
 |---|---|---|
 | `seats.csv` | `seatNo,typeName,status` | `seatId` 由 `seatNo` 稳定散列；`roomName` 与 `typeName` 同义复用 |
 | `seat_types.csv` | `typeName,seatCount` | 区域清单取自本表；`seatCount` 是派生值，读取时按 `seats.csv` 实时统计，列值仅冗余 |
-| `reservations.csv` | `resNo,studentName,studentId,phone,seatNo,resDate,startTime,endTime,status,createTime` | `reservationId` 由 `resNo` 散列；`createTime` 有独立列（契约 v0.8），写入时为空则取 `startTime` 兜底；`signInDeadline` 按 `startTime+15 分钟` 还原；学生姓名与电话为写入时快照 |
+| `reservations.csv` | `resNo,studentName,studentId,phone,seatNo,resDate,startTime,endTime,status,createTime` | `reservationId` 由 `resNo` 散列；`createTime` 有独立列（契约 v0.8），写入时为空则取 `startTime` 兜底；`signInDeadline` 按 `startTime+15 分钟` 还原；学生姓名与电话为**预约时刻快照**——写入时优先取 `Reservation` 实体自带的 `studentName`/`phone`，仅这两项为空时才按学号反查 `students.csv`，避免学生改资料后覆盖历史预约快照 |
 | `students.csv` | `name,studentId,phone,creditScore` | 一一对应，无映射 |
 | `users.csv` | `username,password,role` | `userId` 由 `username` 散列；`name` 读入时取 `username` |
 | `checkin_records.csv` | `recordNo,resNo,actualStart,actualEnd,penalty,createTime` | 一一对应（实体已补 `resNo`、`createTime` 字段） |

@@ -15,6 +15,7 @@ import com.studyroom.entity.ReservationStatus;
 import com.studyroom.entity.Role;
 import com.studyroom.entity.Seat;
 import com.studyroom.entity.SeatStatus;
+import com.studyroom.entity.Student;
 import com.studyroom.entity.User;
 import com.studyroom.util.CsvUtil;
 import com.studyroom.util.DataInitializer;
@@ -177,6 +178,56 @@ class CsvDaoRoundTripTest {
         assertEquals(CreditChangeReason.LATE_CHECKOUT, logs.get(1).getReason());
         assertNull(logs.get(1).getReservationId());
         assertTrue(logs.get(0).getLogId() < logs.get(1).getLogId());
+    }
+
+    @Test
+    void seededUsersAllowStudentLogin() throws Exception {
+        DataInitializer.seedSamples(tempDir);
+        CsvUserDao dao = new CsvUserDao(tempDir);
+        assertEquals(Role.SYS_ADMIN, dao.findByUsername("admin").getRole());
+        assertEquals(Role.DUTY_ADMIN, dao.findByUsername("duty").getRole());
+        // 学生账号登录名即学号（对接文档 7.2），首次启动即可登录
+        assertEquals(Role.STUDENT, dao.findByUsername("20240001").getRole());
+        assertEquals(Role.STUDENT, dao.findByUsername("20240002").getRole());
+    }
+
+    @Test
+    void reservationKeepsSnapshotWhenStudentProfileChanges() throws Exception {
+        CsvUtil.appendRow(tempDir.resolve("students.csv"),
+                List.of("张三", "20240001", "13800000000", "100"));
+        CsvStudentDao studentDao = new CsvStudentDao(tempDir);
+        CsvReservationDao dao = new CsvReservationDao(tempDir, studentDao);
+
+        Date start = at(2026, 11, 6, 8, 0);
+        Reservation reservation = booked(dao, start, "A01", "张三", "13800000000");
+        dao.save(reservation);
+        assertEquals("张三", dao.findByNo(reservation.getResNo()).getStudentName());
+
+        // 学生改资料后，历史预约写回时应保留预约时刻的快照
+        Student student = studentDao.findByStudentId("20240001");
+        student.setName("张三丰");
+        student.setPhone("13711111111");
+        studentDao.update(student);
+        dao.update(dao.findByNo(reservation.getResNo()));
+        assertEquals("张三", dao.findByNo(reservation.getResNo()).getStudentName());
+        assertEquals("13800000000", dao.findByNo(reservation.getResNo()).getPhone());
+
+        // 实体未带快照时仍按学号反查补全，保证新预约不缺展示字段
+        Reservation fresh = booked(dao, start, "A02", null, null);
+        dao.save(fresh);
+        assertEquals("张三丰", dao.findByNo(fresh.getResNo()).getStudentName());
+    }
+
+    private Reservation booked(CsvReservationDao dao, Date start, String seatNo, String name, String phone) {
+        Reservation reservation = new Reservation(null, null, null, start, start,
+                new Date(start.getTime() + 2 * 3_600_000L), new Date(start.getTime() + 15 * 60_000L),
+                ReservationStatus.BOOKED);
+        reservation.setResNo(dao.nextResNo());
+        reservation.setStudentId("20240001");
+        reservation.setStudentName(name);
+        reservation.setPhone(phone);
+        reservation.setSeatNo(seatNo);
+        return reservation;
     }
 
     private Reservation withResNo(Reservation source, String resNo) {

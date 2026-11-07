@@ -5,7 +5,7 @@
 > **仓库**：https://github.com/STU-team/Study_Room_Reservation
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
-> **当前版本**：v1.5（接口契约 v1.2：补 7 天预约窗口、预约/在座列表查询、预约记录姓名手机号、`StudentService` 与 `findReservation`；`mvn test` 36 个用例通过）
+> **当前版本**：v1.6（接口契约 v1.2：补 7 天预约窗口、预约/在座列表查询、预约记录姓名手机号、`StudentService` 与 `findReservation`；按 B 评审修正座位状态图签到迁移、预约快照持久化与示例学生账号；`mvn test` 38 个用例通过）
 > **当前开发分支**：`dev-A`/`dev-B-new`
 
 ## 一、项目简介
@@ -122,5 +122,5 @@ Study_Room_Reservation/
 - [x] A-3 总类图与类字典（7 个业务类 + 4 个枚举、6 条关联含 1 条聚合、4 条枚举依赖；含 CreditScoreLog 信用分流水与 ReservationStatus.NO_SHOW；StarUML 工程 `docs/uml/实验3_总类图.uml`，报告 md + docx，图见 `docs/assets/实验3_总类图.jpg`）
 - [x] A-4 状态图：座位状态图（AVAILABLE/RESERVED/OCCUPIED/CLOSED 四状态 + 三条转维修分支）与预约记录状态图（BOOKED/CHECKED_IN/CHECKED_OUT/CANCELLED/NO_SHOW 五状态 + 三条出口）；StarUML 工程 `docs/uml/实验5_状态图.uml`，报告 md + docx，图见 `docs/assets/实验5_座位状态图.jpg`、`docs/assets/实验5_预约记录状态图.jpg`
 - [x] A-5 实体类与 CSV 持久层：4 个枚举、7 个实体、CSV 基础设施（`CsvUtil`/`CsvMapper`/`CsvStore`/`DataInitializer`），七张表 DAO 全覆盖（契约第七节 7 个接口全部实现），`mvn test` 19 个用例通过；七张表字段映射无有损（`createTime` 已按契约 v0.8 补列），类图主键与 CSV 业务编号的落差由 `CsvMapper` 稳定映射消化（见 `docs/development/A5-实现记录.md`）
-- [x] A-6 Service 业务逻辑：`ReservationService`（查询可用座位、预约、取消、签到、签退、爽约扫描、预约/在座列表与按号查询）、`SeatService`（座位列表/查询/状态更新）、`AuthService`（登录/登出）、`StudentService`（学生档案与信用分）四个接口与实现，`ServiceFactory` 统一装配；`BusinessException` 带错误码，`DateTimes` 负责 `java.time` 与 `Date` 互转；签到即写 `CheckinRecord`、签退用 `CheckinRecordDao.update` 回填（契约 v0.9），预约窗口限制为 7 天内（v1.0），`listReservations`/`listAllReservations`/`listSeated`/`findReservation` 与 `Reservation.studentName`/`phone`（v1.1、v1.2）；`mvn test` 36 个用例通过（见 `docs/development/A6-实现记录.md`、`docs/contract/对接-A6到后续B.md`）
+- [x] A-6 Service 业务逻辑：`ReservationService`（查询可用座位、预约、取消、签到、签退、爽约扫描、预约/在座列表与按号查询）、`SeatService`（座位列表/查询/状态更新）、`AuthService`（登录/登出）、`StudentService`（学生档案与信用分）四个接口与实现，`ServiceFactory` 统一装配；`BusinessException` 带错误码，`DateTimes` 负责 `java.time` 与 `Date` 互转；签到即写 `CheckinRecord`、签退用 `CheckinRecordDao.update` 回填（契约 v0.9），预约窗口限制为 7 天内（v1.0），`listReservations`/`listAllReservations`/`listSeated`/`findReservation` 与 `Reservation.studentName`/`phone`（v1.1、v1.2）；`mvn test` 38 个用例通过（见 `docs/development/A6-实现记录.md`、`docs/contract/对接-A6到后续B.md`）
 - [x] A-7 实验8 版本控制记录：分支策略（`dev-A` 单分支长期复用）、提交规范（`A-任务号:` 前缀、禁 emoji）、PR 评审闭环与 25 条提交明细表，附终端 `git log --graph` 分支拓扑截图 `docs/assets/A7_git_graph.png` 与 PR #12 页面截图 `docs/assets/A7_pr_screenshot.png`（见 `docs/reports/实验8-版本控制.md` 与同名 docx）

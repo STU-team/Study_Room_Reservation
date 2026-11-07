@@ -4,7 +4,7 @@
 > **课程**：CST9301 软件工程  
 > **作者**：易雨杰（成员A）  
 > **创建时间**：2026-11-06  
-> **版本**：v1.3（契约 v1.2：预约记录带姓名/手机号、新增 `StudentService` 与 `findReservation`，三项取数缺口已补齐）  
+> **版本**：v1.4（契约 v1.2：预约记录带姓名/手机号、新增 `StudentService` 与 `findReservation`，三项取数缺口已补齐；按 B 评审修正用例数为 38，示例数据补两个学生登录账号）  
 > **关联**：`docs/contract/接口契约.md` v1.2 第三、六、七节、`docs/development/A6-实现记录.md`
 
 ## 一、怎么拿到 Service
@@ -99,7 +99,7 @@ git switch dev-B-new
 git merge origin/dev-A
 ```
 
-合并完成后 `src/main/java/com/studyroom` 下应当有 `entity`、`dao`、`service`、`util` 四个包；先跑 `.\mvnw.cmd test`，应看到 34 个用例通过，再开始写界面。
+合并完成后 `src/main/java/com/studyroom` 下应当有 `entity`、`dao`、`service`、`util` 四个包；先跑 `.\mvnw.cmd test`，应看到 38 个用例通过（`Tests run: 38, Failures: 0, Errors: 0`），再开始写界面。
 
 ### 7.1 程序入口骨架
 

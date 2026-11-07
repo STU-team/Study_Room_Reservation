@@ -98,15 +98,21 @@ public class CsvReservationDao implements ReservationDao {
         }
     }
 
+    /** 姓名与手机号是预约那一刻的快照：优先写实体自带值，缺失时才反查学生档案补。 */
     private List<String> toRow(Reservation r) {
         String date = new SimpleDateFormat(DATE, Locale.ROOT).format(r.getStartTime());
         String start = new SimpleDateFormat(TIME, Locale.ROOT).format(r.getStartTime());
         String end = new SimpleDateFormat(TIME, Locale.ROOT).format(r.getEndTime());
-        Student s = studentDao.findByStudentId(r.getStudentId());
+        String name = r.getStudentName();
+        String phone = r.getPhone();
+        if (name == null || phone == null) {
+            Student s = studentDao.findByStudentId(r.getStudentId());
+            if (name == null) name = s == null ? "" : s.getName();
+            if (phone == null) phone = s == null ? "" : s.getPhone();
+        }
         String created = CsvMapper.time(r.getCreateTime() == null ? r.getStartTime() : r.getCreateTime());
-        return List.of(r.getResNo(), s == null ? "" : CsvMapper.text(s.getName()), r.getStudentId(),
-                s == null ? "" : CsvMapper.text(s.getPhone()), r.getSeatNo(), date, start, end,
-                r.getStatus().name(), created);
+        return List.of(r.getResNo(), CsvMapper.text(name), r.getStudentId(), CsvMapper.text(phone),
+                r.getSeatNo(), date, start, end, r.getStatus().name(), created);
     }
 
     private Reservation toReservation(List<String> row) {
