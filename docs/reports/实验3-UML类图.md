@@ -1,6 +1,6 @@
 # 实验3　UML 类图
 
-> **课程**：CST9301 软件工程　｜　**版本**：v1.2（2026-11-04 按 B 评审意见调整：新增 CreditScoreLog 与 CreditChangeReason，ReservationStatus 加 NO_SHOW，Reservation 时段字段拆分）
+> **课程**：CST9301 软件工程　｜　**版本**：v1.3（2026-11-07 按 Word 最终版同步实验时间；v1.2 为按 B 评审意见调整：新增 CreditScoreLog 与 CreditChangeReason，ReservationStatus 加 NO_SHOW，Reservation 时段字段拆分）
 > **文件作用**：实验3 报告（Markdown 版），供 GitHub 在线浏览与团队协作；Word 版为提交用的最终版。两版内容一致。
 > **撰写**：易雨杰（成员A，2024611209）　｜　**评审**：叶梅冰（成员B，2024611038）
 
@@ -12,7 +12,7 @@
 | 系 | 计算机系 |
 | 专业 | 计算机科学与技术 |
 | 姓名 | 易雨杰（2024611209）、叶梅冰（2024611038） |
-| 实验时间 | 2026 年 11 月 4 日 |
+| 实验时间 | 2026 年 11 月 7 日 |
 | 实验题目 | 实验3　UML 类图 |
 | 成绩 | |
 
