@@ -5,7 +5,7 @@
 > **仓库**：https://github.com/yyj138/Study_Room_Reservation
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
-> **当前版本**：v1.7（接口契约 v1.2：补 7 天预约窗口、预约/在座列表查询、预约记录姓名手机号、`StudentService` 与 `findReservation`；按 B 评审修正座位状态图签到迁移、预约快照持久化与示例学生账号；`mvn test` 38 个用例通过。B-2 实验4 签退活动图已合并至 main，PR #11 已合入）
+> **当前版本**：v1.8（接口契约 v1.2；A 侧持久层与业务层已完成。B 侧实验4 已合入，B-3 实验6 在线预约时序图已完成）
 > **当前开发分支**：`dev-A`/`dev-B-new`
 
 ## 一、项目简介
@@ -100,6 +100,8 @@ Study_Room_Reservation/
 | [实验8 报告（Word）](docs/reports/实验8-版本控制.docx) | 提交用版本，版式与实验5 定稿一致 |
 | [A-7 到 A-8 联调清单](docs/contract/对接-A7到A8联调清单.md) | 界面动作对应 Service 方法、12 个异常码提示文案、演示数据用法、验收清单与已知边界 |
 | [演示数据](docs/assets/demo-data/README.md) | 7 个 CSV，覆盖 4 种座位状态与 5 种预约状态，供 A-8 联调与答辩演示 |
+| [实验6报告（Markdown）](docs/reports/实验6-时序图.md) | B-3 产出：在线预约时序图与设计讨论 | 
+| [实验6报告（Word）](docs/reports/实验6-时序图.docx) | 提交用版本 | 
 
 ## 七、Git 协同规范
 
@@ -127,3 +129,4 @@ Study_Room_Reservation/
 - [x] A-7 实验8 版本控制记录：分支策略（`dev-A` 单分支长期复用）、提交规范（`A-任务号:` 前缀、禁 emoji）、PR 评审闭环与 25 条提交明细表，附终端 `git log --graph` 分支拓扑截图 `docs/assets/A7_git_graph.png` 与 PR #12 页面截图 `docs/assets/A7_pr_screenshot.png`（见 `docs/reports/实验8-版本控制.md` 与同名 docx）
 - [x] B-1 实验2 系统用例图与 12 条用例叙述（PR #7、#8 已合并）
 - [x] B-2 实验4 "值班管理员签退"泳道活动图与实验4报告（含异常分支与信用分判定，md + docx 已落盘；PR #11 已合并）
+- [x] B-3 实验6 "在线预约"时序图与实验6报告（含阶段分离、二次校验防并发设计，导出 UML 图与 StarUML 截图）
