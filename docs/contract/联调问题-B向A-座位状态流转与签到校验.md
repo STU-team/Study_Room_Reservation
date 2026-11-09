@@ -321,3 +321,14 @@ public Reservation signIn(String resNo) {
 3. “通知学生”目前没有契约字段支撑（无消息表、无推送），B 侧只能做到“我的预约”里展示座位状态并在顶部提示；是否认可这一范围？
 4. 契约 v1.2 标注已确认，如最终要改 178-180 行措辞，请走 `CONTRACT-CHANGE` 流程，本次不擅自修改。
 5. 是否认可 4.2 / 4.3 的做法：状态图四态与 T-02~T-05 时机都不动，预约成功仍置 `RESERVED`；只把可用性改成按时段与 `BOOKED` / `CHECKED_IN` 判重叠，允许同一座位多条不重叠预约；系统管理员手动改状态按 5.2 矩阵收紧，签到按 5.3 加守卫。另请在实验5 图下补 T-05 / T-07 两句文字说明（图不重画、契约不改），并确认排期由谁定。
+
+---
+
+## 九、A 的处理结论（2026-11-09，v1.3 已落地）
+
+1. **以 T-08 为准**：`OCCUPIED → CLOSED` 拒绝，须先签退；契约 178-180 行措辞按 `CONTRACT-CHANGE` 改为 v1.3 手动矩阵。
+2. **`RESERVED → CLOSED` 的级联放 Service**：新增 `ReservationService.closeSeatForRepair(seatNo)`，内部遍历该座位全部 `BOOKED` 预约——已过签到截止时间的按爽约扣 5 分置 `NO_SHOW`，未过的置 `CANCELLED`——最后座位置 `CLOSED`。界面不再自己编排取消逻辑，避免半取消中间态。
+3. **"通知学生"认可 B 范围**：无消息表、无推送，B 侧在"我的预约"加座位状态列与提示条即可，A 侧不新增通知字段。
+4. **4.2 / 4.3 全采纳**：座位 `status` 改为汇总状态（有 CHECKED_IN→OCCUPIED，否则有 BOOKED→RESERVED，否则 AVAILABLE；CLOSED 不动）；可用性按时段与 `BOOKED`/`CHECKED_IN` 判重叠，允许同座位多条不重叠预约并存。
+5. **实验5 md 已补 T-03 / T-05 / T-07 文字**（图不重画，Word 版为提交时点快照）；实验6 md 三处旧口径同步为时段重叠；测试补到 43 个全过。
+6. **B 侧配套**（第七节）按问题单所述执行即可，A 侧 Service 方法签名与异常码已就位，B 端可直接调用 `closeSeatForRepair(seatNo)`。
