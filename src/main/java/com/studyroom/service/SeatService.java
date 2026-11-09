@@ -12,6 +12,10 @@ public interface SeatService {
 
     Seat findByNo(String seatNo) throws BusinessException;
 
-    /** 更新座位状态；OCCUPIED 不得直接改为 AVAILABLE，须先办签退。 */
+    /**
+     * 手动维护座位状态（v1.3 矩阵）：
+     * AVAILABLE↔CLOSED 允许；OCCUPIED / RESERVED 不得手动改为任何状态。
+     * 要把 OCCUPIED / RESERVED 的座位转维修，请走 {@link ReservationService#closeSeatForRepair}。
+     */
     void updateSeatStatus(String seatNo, SeatStatus status) throws BusinessException;
 }

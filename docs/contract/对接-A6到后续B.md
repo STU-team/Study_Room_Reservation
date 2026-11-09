@@ -4,8 +4,8 @@
 > **课程**：CST9301 软件工程  
 > **作者**：易雨杰（成员A）  
 > **创建时间**：2026-11-06  
-> **版本**：v1.4（契约 v1.2：预约记录带姓名/手机号、新增 `StudentService` 与 `findReservation`，三项取数缺口已补齐；按 B 评审修正用例数为 38，示例数据补两个学生登录账号）  
-> **关联**：`docs/contract/接口契约.md` v1.2 第三、六、七节、`docs/development/A6-实现记录.md`
+> **版本**：v1.5（契约 v1.3：`SeatService.updateSeatStatus` 收紧为手动矩阵、`signIn` 加座位守卫、座位 `status` 改汇总状态、新增 `ReservationService.closeSeatForRepair(seatNo)`；用例数 43）  
+> **关联**：`docs/contract/接口契约.md` v1.3 第三、六、七节、`docs/development/A6-实现记录.md`
 
 ## 一、怎么拿到 Service
 
