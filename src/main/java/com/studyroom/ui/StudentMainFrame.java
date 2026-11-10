@@ -56,6 +56,8 @@ public class StudentMainFrame extends JFrame {
     private static final String[] CARDS = {"seat", "reserve", "my"};
     private static final SimpleDateFormat SDF_DATETIME = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final int COL_SEAT_STATUS = 2;
+    private static final int COL_RES_STATUS = 8;
 
     public StudentMainFrame(User user) {
         this.currentUser = user;
@@ -157,7 +159,7 @@ public class StudentMainFrame extends JFrame {
             }
         };
         JTable seatTable = TableFactory.create(seatTableModel, 48);
-        seatTable.getColumnModel().getColumn(2).setCellRenderer(TableFactory.seatStatusRenderer());
+        seatTable.getColumnModel().getColumn(COL_SEAT_STATUS).setCellRenderer(TableFactory.seatStatusRenderer());
         panel.add(TableFactory.scroll(seatTable), BorderLayout.CENTER);
         return panel;
     }
@@ -425,8 +427,8 @@ public class StudentMainFrame extends JFrame {
             }
         };
         myResvTable = TableFactory.create(myResvTableModel, 54, "还没有预约记录");
-        myResvTable.getColumnModel().getColumn(2).setCellRenderer(TableFactory.seatStatusRenderer());
-        myResvTable.getColumnModel().getColumn(8).setCellRenderer(TableFactory.reservationStatusRenderer());
+        myResvTable.getColumnModel().getColumn(COL_SEAT_STATUS).setCellRenderer(TableFactory.seatStatusRenderer());
+        myResvTable.getColumnModel().getColumn(COL_RES_STATUS).setCellRenderer(TableFactory.reservationStatusRenderer());
         panel.add(TableFactory.scroll(myResvTable), BorderLayout.CENTER);
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 6));
@@ -469,7 +471,7 @@ public class StudentMainFrame extends JFrame {
             return;
         }
         String resNo = String.valueOf(myResvTable.getValueAt(row, 0));
-        if (myResvTable.getValueAt(row, 8) != ReservationStatus.BOOKED) {
+        if (myResvTable.getValueAt(row, COL_RES_STATUS) != ReservationStatus.BOOKED) {
             JOptionPane.showMessageDialog(this, "只能取消“待签到”状态的预约", "提示", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
