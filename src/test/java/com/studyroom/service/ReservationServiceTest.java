@@ -83,10 +83,10 @@ class ReservationServiceTest {
     }
 
     @Test
-    void reserveRejectedWhenSeatNotAvailable() {
+    void reserveRejectedWhenSeatClosedOrSlotConflicts() {
         book("A01", TEN, TWELVE);
-        BusinessException occupied = assertThrows(BusinessException.class, () -> book("A01", TEN, TWELVE));
-        assertEquals("SEAT_UNAVAILABLE", occupied.getCode());
+        BusinessException conflict = assertThrows(BusinessException.class, () -> book("A01", TEN, TWELVE));
+        assertEquals("SEAT_CONFLICT", conflict.getCode());
 
         Seat a02 = seatDao.findByNo("A02");
         a02.updateStatus(SeatStatus.CLOSED);
@@ -96,7 +96,7 @@ class ReservationServiceTest {
     }
 
     @Test
-    void listAvailableSeatsFiltersOccupiedSlotAndArea() {
+    void listAvailableSeatsFiltersBySlotNotBySummaryStatus() {
         book("A01", TEN, TWELVE);
 
         List<Seat> window = service.listAvailableSeats(TOMORROW, TEN, TWELVE, "靠窗区");
@@ -105,8 +105,10 @@ class ReservationServiceTest {
         List<Seat> anyArea = service.listAvailableSeats(TOMORROW, TEN, TWELVE, null);
         assertEquals(3, anyArea.size());
 
+        // A01 汇总状态是 RESERVED，但所选时段 13-15 与已有预约 10-12 不重叠，仍可选
         List<Seat> otherSlot = service.listAvailableSeats(TOMORROW, LocalTime.of(13, 0), LocalTime.of(15, 0), "靠窗区");
-        assertEquals(1, otherSlot.size());
+        assertEquals(2, otherSlot.size());
+        assertTrue(otherSlot.stream().map(Seat::getSeatNo).toList().containsAll(List.of("A01", "A02")));
     }
 
     @Test
@@ -225,6 +227,90 @@ class ReservationServiceTest {
         assertEquals("13800000000", read.getPhone());
         assertEquals("NOT_FOUND",
                 assertThrows(BusinessException.class, () -> service.findReservation("RES20990101001")).getCode());
+    }
+
+    @Test
+    void sameSeatAllowsNonOverlappingReservations() {
+        Reservation r1 = book("A01", TEN, TWELVE);
+        Reservation r2 = service.reserve("A01", seatStudent(), TOMORROW,
+                LocalTime.of(14, 0), LocalTime.of(16, 0));
+
+        assertEquals(ReservationStatus.BOOKED, r1.getStatus());
+        assertEquals(ReservationStatus.BOOKED, r2.getStatus());
+        assertEquals(SeatStatus.RESERVED, seatDao.findByNo("A01").getStatus());
+
+        BusinessException overlap = assertThrows(BusinessException.class,
+                () -> service.reserve("A01", seatStudent(), TOMORROW,
+                        LocalTime.of(11, 0), LocalTime.of(13, 0)));
+        assertEquals("SEAT_CONFLICT", overlap.getCode());
+    }
+
+    @Test
+    void cancelOneKeepsReservedUntilLastReleased() {
+        Reservation r1 = book("A01", TEN, TWELVE);
+        Reservation r2 = service.reserve("A01", seatStudent(), TOMORROW,
+                LocalTime.of(14, 0), LocalTime.of(16, 0));
+
+        service.cancelReservation(r1.getResNo());
+        assertEquals(SeatStatus.RESERVED, seatDao.findByNo("A01").getStatus());
+
+        service.cancelReservation(r2.getResNo());
+        assertEquals(SeatStatus.AVAILABLE, seatDao.findByNo("A01").getStatus());
+    }
+
+    @Test
+    void signOutKeepsReservedWhenFutureBookingExists() {
+        Reservation r1 = book("A01", TEN, TWELVE);
+        Reservation r2 = service.reserve("A01", seatStudent(), TOMORROW,
+                LocalTime.of(14, 0), LocalTime.of(16, 0));
+
+        service.signIn(r1.getResNo());
+        assertEquals(SeatStatus.OCCUPIED, seatDao.findByNo("A01").getStatus());
+
+        service.signOut(r1.getResNo(), LocalTime.of(11, 50));
+        assertEquals(SeatStatus.RESERVED, seatDao.findByNo("A01").getStatus());
+
+        service.cancelReservation(r2.getResNo());
+        assertEquals(SeatStatus.AVAILABLE, seatDao.findByNo("A01").getStatus());
+    }
+
+    @Test
+    void signInRejectedWhenSeatClosedOrOccupied() {
+        Reservation r = book("A01", TEN, TWELVE);
+
+        Seat seat = seatDao.findByNo("A01");
+        seat.updateStatus(SeatStatus.CLOSED);
+        seatDao.update(seat);
+        BusinessException closed = assertThrows(BusinessException.class, () -> service.signIn(r.getResNo()));
+        assertEquals("SEAT_UNAVAILABLE", closed.getCode());
+        assertEquals(ReservationStatus.BOOKED, reservationDao.findByNo(r.getResNo()).getStatus());
+        assertNull(checkinRecordDao.findByResNo(r.getResNo()));
+
+        seat.updateStatus(SeatStatus.OCCUPIED);
+        seatDao.update(seat);
+        BusinessException inUse = assertThrows(BusinessException.class, () -> service.signIn(r.getResNo()));
+        assertEquals("SEAT_IN_USE", inUse.getCode());
+        assertEquals(ReservationStatus.BOOKED, reservationDao.findByNo(r.getResNo()).getStatus());
+    }
+
+    @Test
+    void closeSeatForRepairCascadesBookedAndClosesSeat() {
+        book("A01", TEN, TWELVE);
+        service.reserve("A01", seatStudent(), TOMORROW, LocalTime.of(14, 0), LocalTime.of(16, 0));
+
+        int handled = service.closeSeatForRepair("A01");
+        assertEquals(2, handled);
+        assertEquals(SeatStatus.CLOSED, seatDao.findByNo("A01").getStatus());
+        List<Reservation> mine = service.listReservations("20240001");
+        assertEquals(2, mine.size());
+        assertTrue(mine.stream().allMatch(r -> r.getStatus() == ReservationStatus.CANCELLED));
+
+        BusinessException reuse = assertThrows(BusinessException.class, () -> book("A01", TEN, TWELVE));
+        assertEquals("SEAT_UNAVAILABLE", reuse.getCode());
+    }
+
+    private Student seatStudent() {
+        return studentDao.findByStudentId("20240001");
     }
 
     private Reservation book(String seatNo, LocalTime start, LocalTime end) {

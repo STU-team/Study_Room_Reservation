@@ -59,7 +59,7 @@ public class ReservationServiceImpl implements ReservationService {
         List<Reservation> reservations = reservationDao.findAll();
         List<Seat> result = new ArrayList<>();
         for (Seat seat : seatDao.findAll()) {
-            if (seat.getStatus() != SeatStatus.AVAILABLE) continue;
+            if (seat.getStatus() == SeatStatus.CLOSED) continue;
             if (typeName != null && !typeName.isBlank() && !typeName.equals(seat.getRoomName())) continue;
             if (occupied(reservations, seat.getSeatNo(), from, to)) continue;
             result.add(seat);
@@ -116,8 +116,8 @@ public class ReservationServiceImpl implements ReservationService {
         if (!to.after(from)) throw new BusinessException("PARAM", "结束时间必须晚于开始时间");
         Seat seat = seatDao.findByNo(seatNo);
         if (seat == null) throw new BusinessException("SEAT_NOT_FOUND", "座位不存在：" + seatNo);
-        if (seat.getStatus() != SeatStatus.AVAILABLE) {
-            throw new BusinessException("SEAT_UNAVAILABLE", "座位当前不可预约：" + seat.getStatus());
+        if (seat.getStatus() == SeatStatus.CLOSED) {
+            throw new BusinessException("SEAT_UNAVAILABLE", "座位正在维修，不可预约：" + seatNo);
         }
         if (occupied(reservationDao.findAll(), seatNo, from, to)) {
             throw new BusinessException("SEAT_CONFLICT", "该座位在所选时段已被预约");
@@ -132,8 +132,10 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setSeatNo(seatNo);
         reservationDao.save(reservation);
 
-        seat.updateStatus(SeatStatus.RESERVED);
-        seatDao.update(seat);
+        if (seat.getStatus() == SeatStatus.AVAILABLE) {
+            seat.updateStatus(SeatStatus.RESERVED);
+            seatDao.update(seat);
+        }
         return reservation;
     }
 
@@ -148,7 +150,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
         reservation.cancel();
         reservationDao.update(reservation);
-        release(reservation.getSeatNo(), SeatStatus.RESERVED);
+        refreshSeatSummary(reservation.getSeatNo());
         return reservation;
     }
 
@@ -160,6 +162,14 @@ public class ReservationServiceImpl implements ReservationService {
         }
         if (new Date().after(reservation.getSignInDeadline())) {
             throw new BusinessException("DEADLINE", "已超过签到截止时间，无法签到");
+        }
+        Seat seat = seatDao.findByNo(reservation.getSeatNo());
+        if (seat == null) throw new BusinessException("SEAT_NOT_FOUND", "座位不存在：" + reservation.getSeatNo());
+        if (seat.getStatus() == SeatStatus.CLOSED) {
+            throw new BusinessException("SEAT_UNAVAILABLE", "座位 " + seat.getSeatNo() + " 已转维修，无法签到");
+        }
+        if (seat.getStatus() == SeatStatus.OCCUPIED) {
+            throw new BusinessException("SEAT_IN_USE", "座位 " + seat.getSeatNo() + " 当前为使用中，无法签到");
         }
         reservation.checkIn();
         reservationDao.update(reservation);
@@ -182,7 +192,6 @@ public class ReservationServiceImpl implements ReservationService {
 
         reservation.checkOut();
         reservationDao.update(reservation);
-        setSeatStatus(reservation.getSeatNo(), SeatStatus.AVAILABLE);
 
         int penalty = 0;
         if (end.after(reservation.getEndTime())) {
@@ -200,6 +209,7 @@ public class ReservationServiceImpl implements ReservationService {
             record.setPenalty(penalty);
             checkinRecordDao.update(record);
         }
+        refreshSeatSummary(reservation.getSeatNo());
         return record;
     }
 
@@ -216,11 +226,42 @@ public class ReservationServiceImpl implements ReservationService {
             if (!when.after(deadline)) continue;
             reservation.handleNoShow();
             reservationDao.update(reservation);
-            release(reservation.getSeatNo(), SeatStatus.RESERVED);
             deduct(reservation.getStudentId(), NO_SHOW_PENALTY, CreditChangeReason.NO_SHOW,
                     reservation.getReservationId());
+            refreshSeatSummary(reservation.getSeatNo());
             handled++;
         }
+        return handled;
+    }
+
+    @Override
+    public int closeSeatForRepair(String seatNo) {
+        if (seatNo == null || seatNo.isBlank()) throw new BusinessException("PARAM", "座位号不能为空");
+        Seat seat = seatDao.findByNo(seatNo);
+        if (seat == null) throw new BusinessException("SEAT_NOT_FOUND", "座位不存在：" + seatNo);
+        if (seat.getStatus() == SeatStatus.CLOSED) return 0;
+        if (seat.getStatus() == SeatStatus.OCCUPIED) {
+            throw new BusinessException("STATE", "座位 " + seatNo + " 有学生在座，请先办理签退再转维修");
+        }
+        Date now = new Date();
+        int handled = 0;
+        for (Reservation r : reservationDao.findAll()) {
+            if (r.getSeatNo() == null || !r.getSeatNo().equals(seatNo)) continue;
+            if (r.getStatus() != ReservationStatus.BOOKED) continue;
+            Date deadline = r.getSignInDeadline() != null ? r.getSignInDeadline()
+                    : DateTimes.plusMinutes(r.getStartTime(), DEADLINE_MINUTES);
+            if (now.after(deadline)) {
+                r.handleNoShow();
+                reservationDao.update(r);
+                deduct(r.getStudentId(), NO_SHOW_PENALTY, CreditChangeReason.NO_SHOW, r.getReservationId());
+            } else {
+                r.cancel();
+                reservationDao.update(r);
+            }
+            handled++;
+        }
+        seat.updateStatus(SeatStatus.CLOSED);
+        seatDao.update(seat);
         return handled;
     }
 
@@ -253,12 +294,26 @@ public class ReservationServiceImpl implements ReservationService {
         return false;
     }
 
-    /** 释放座位；仅当座位处于预期状态时才改回 AVAILABLE，避免误改维修中的座位。 */
-    private void release(String seatNo, SeatStatus expected) {
+    /**
+     * 按该座位全部有效预约重算汇总状态（v1.3）：
+     * 有 CHECKED_IN -> OCCUPIED；否则有 BOOKED -> RESERVED；否则 AVAILABLE。
+     * CLOSED 不动（维修中是管理员手动关的，业务事件不把它弹回）。
+     */
+    private void refreshSeatSummary(String seatNo) {
         Seat seat = seatDao.findByNo(seatNo);
-        if (seat == null || seat.getStatus() != expected) return;
-        seat.updateStatus(SeatStatus.AVAILABLE);
-        seatDao.update(seat);
+        if (seat == null || seat.getStatus() == SeatStatus.CLOSED) return;
+        boolean seated = false;
+        boolean booked = false;
+        for (Reservation r : reservationDao.findAll()) {
+            if (r.getSeatNo() == null || !r.getSeatNo().equals(seatNo)) continue;
+            if (r.getStatus() == ReservationStatus.CHECKED_IN) seated = true;
+            else if (r.getStatus() == ReservationStatus.BOOKED) booked = true;
+        }
+        SeatStatus target = seated ? SeatStatus.OCCUPIED : (booked ? SeatStatus.RESERVED : SeatStatus.AVAILABLE);
+        if (seat.getStatus() != target) {
+            seat.updateStatus(target);
+            seatDao.update(seat);
+        }
     }
 
     private void setSeatStatus(String seatNo, SeatStatus status) {

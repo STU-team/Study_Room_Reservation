@@ -43,4 +43,11 @@ public interface ReservationService {
 
     /** 爽约处理：扫描已过签到截止时间的 BOOKED 预约，置 NO_SHOW、释放座位、扣 5 分并写流水。 */
     int handleNoShow(LocalDateTime now) throws BusinessException;
+
+    /**
+     * 系统管理员把座位转维修的编排入口（v1.3）：取消该座位全部 BOOKED 预约
+     * （已过截止的按爽约扣 5 分置 NO_SHOW，未过的置 CANCELLED），最后座位置 CLOSED。
+     * 返回处理掉的预约条数。
+     */
+    int closeSeatForRepair(String seatNo) throws BusinessException;
 }

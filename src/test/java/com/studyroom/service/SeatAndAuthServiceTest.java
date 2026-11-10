@@ -44,18 +44,46 @@ class SeatAndAuthServiceTest {
     }
 
     @Test
-    void occupiedSeatCannotBeReleasedDirectlyButCanClose() {
-        Seat seat = seatService.findByNo("A01");
-        seat.updateStatus(SeatStatus.OCCUPIED);
-        seatDao.update(seat);
+    void manualStatusMatrixEnforced() {
+        Seat a01 = seatService.findByNo("A01");
 
-        BusinessException e = assertThrows(BusinessException.class,
-                () -> seatService.updateSeatStatus("A01", SeatStatus.AVAILABLE));
-        assertEquals("SEAT_IN_USE", e.getCode());
-        assertEquals("座位使用中，须先办理签退", e.getMessage());
-
+        // AVAILABLE <-> CLOSED 允许
         seatService.updateSeatStatus("A01", SeatStatus.CLOSED);
         assertEquals(SeatStatus.CLOSED, seatDao.findByNo("A01").getStatus());
+        seatService.updateSeatStatus("A01", SeatStatus.AVAILABLE);
+        assertEquals(SeatStatus.AVAILABLE, seatDao.findByNo("A01").getStatus());
+
+        // OCCUPIED 不得手动改为任何状态（含 CLOSED）
+        a01.updateStatus(SeatStatus.OCCUPIED);
+        seatDao.update(a01);
+        BusinessException toAvail = assertThrows(BusinessException.class,
+                () -> seatService.updateSeatStatus("A01", SeatStatus.AVAILABLE));
+        assertEquals("SEAT_IN_USE", toAvail.getCode());
+        BusinessException toClosed = assertThrows(BusinessException.class,
+                () -> seatService.updateSeatStatus("A01", SeatStatus.CLOSED));
+        assertEquals("SEAT_IN_USE", toClosed.getCode());
+        assertEquals(SeatStatus.OCCUPIED, seatDao.findByNo("A01").getStatus());
+
+        // RESERVED 不得手动改为任何状态
+        Seat a02 = seatService.findByNo("A02");
+        a02.updateStatus(SeatStatus.RESERVED);
+        seatDao.update(a02);
+        BusinessException reserved = assertThrows(BusinessException.class,
+                () -> seatService.updateSeatStatus("A02", SeatStatus.CLOSED));
+        assertEquals("STATE", reserved.getCode());
+        BusinessException reservedToOcc = assertThrows(BusinessException.class,
+                () -> seatService.updateSeatStatus("A02", SeatStatus.OCCUPIED));
+        assertEquals("STATE", reservedToOcc.getCode());
+
+        // AVAILABLE 不能手动改成 OCCUPIED（使用中只能由签到产生）
+        a02.updateStatus(SeatStatus.AVAILABLE);
+        seatDao.update(a02);
+        BusinessException toOcc = assertThrows(BusinessException.class,
+                () -> seatService.updateSeatStatus("A02", SeatStatus.OCCUPIED));
+        assertEquals("STATE", toOcc.getCode());
+        BusinessException availToReserved = assertThrows(BusinessException.class,
+                () -> seatService.updateSeatStatus("A02", SeatStatus.RESERVED));
+        assertEquals("STATE", availToReserved.getCode());
     }
 
     @Test
