@@ -23,8 +23,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** 学生主窗口：顶部导航、中间卡片区、底部 3 个标签页。 */
@@ -415,7 +417,7 @@ public class StudentMainFrame extends JFrame {
         panel.setBackground(UiTheme.PANEL);
         panel.setBorder(new EmptyBorder(4, 12, 8, 12));
 
-        String[] columns = {"预约号", "座位", "姓名", "手机", "开始时间", "结束时间", "签到截止", "状态", "提交时间"};
+        String[] columns = {"预约号", "座位", "座位状态", "姓名", "手机", "开始时间", "结束时间", "签到截止", "状态", "提交时间"};
         myResvTableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -423,7 +425,8 @@ public class StudentMainFrame extends JFrame {
             }
         };
         myResvTable = TableFactory.create(myResvTableModel, 54, "还没有预约记录");
-        myResvTable.getColumnModel().getColumn(7).setCellRenderer(TableFactory.reservationStatusRenderer());
+        myResvTable.getColumnModel().getColumn(2).setCellRenderer(TableFactory.seatStatusRenderer());
+        myResvTable.getColumnModel().getColumn(8).setCellRenderer(TableFactory.reservationStatusRenderer());
         panel.add(TableFactory.scroll(myResvTable), BorderLayout.CENTER);
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 6));
@@ -440,10 +443,15 @@ public class StudentMainFrame extends JFrame {
 
     private void refreshMyReservations() {
         List<Reservation> list = reservationService.listReservations(currentUser.getUsername());
+        Map<String, SeatStatus> statusBySeat = new HashMap<>();
+        for (Seat seat : seatService.listAllSeats()) {
+            statusBySeat.put(seat.getSeatNo(), seat.getStatus());
+        }
         myResvTableModel.setRowCount(0);
         for (Reservation reservation : list) {
             myResvTableModel.addRow(new Object[]{
-                    reservation.getResNo(), reservation.getSeatNo(), reservation.getStudentName(),
+                    reservation.getResNo(), reservation.getSeatNo(),
+                    statusBySeat.get(reservation.getSeatNo()), reservation.getStudentName(),
                     reservation.getPhone(),
                     SDF_DATETIME.format(reservation.getStartTime()),
                     SDF_DATETIME.format(reservation.getEndTime()),
@@ -461,7 +469,7 @@ public class StudentMainFrame extends JFrame {
             return;
         }
         String resNo = String.valueOf(myResvTable.getValueAt(row, 0));
-        if (myResvTable.getValueAt(row, 7) != ReservationStatus.BOOKED) {
+        if (myResvTable.getValueAt(row, 8) != ReservationStatus.BOOKED) {
             JOptionPane.showMessageDialog(this, "只能取消“待签到”状态的预约", "提示", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
