@@ -285,9 +285,23 @@ public class SysAdminMainFrame extends JFrame {
             return;
         }
         try {
-            seatService.updateSeatStatus(seatNo, target);
-            JOptionPane.showMessageDialog(this, "座位 " + seatNo + " 已改为「"
-                    + TableFactory.seatName(target) + "」");
+            if (target == SeatStatus.CLOSED) {
+                if (current == SeatStatus.RESERVED
+                        && JOptionPane.showConfirmDialog(this,
+                        "座位 " + seatNo + " 当前为预约状态，转维修会取消其全部未完成预约，是否继续？",
+                        "确认转维修", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                int handled = reservationService.closeSeatForRepair(seatNo);
+                String msg = handled == 0
+                        ? "座位 " + seatNo + " 已转维修"
+                        : "已处理 " + handled + " 条未完成预约，座位 " + seatNo + " 已转维修";
+                JOptionPane.showMessageDialog(this, msg);
+            } else {
+                seatService.updateSeatStatus(seatNo, target);
+                JOptionPane.showMessageDialog(this, "座位 " + seatNo + " 已改为「"
+                        + TableFactory.seatName(target) + "」");
+            }
             refreshAll();
         } catch (BusinessException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "修改失败", JOptionPane.WARNING_MESSAGE);
