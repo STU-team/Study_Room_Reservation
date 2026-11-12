@@ -1,7 +1,7 @@
 # 实验3　UML 类图
 
-> **课程**：CST9301 软件工程　｜　**版本**：v1.3（2026-11-07 按 Word 最终版同步实验时间；v1.2 为按 B 评审意见调整：新增 CreditScoreLog 与 CreditChangeReason，ReservationStatus 加 NO_SHOW，Reservation 时段字段拆分）
-> **文件作用**：实验3 报告（Markdown 版），供 GitHub 在线浏览与团队协作；Word 版为提交用的最终版。两版内容一致。
+> **课程**：CST9301 软件工程　｜　**版本**：v1.4（v1.4 按 B 的 A-01 修正座位状态流转与 `updateStatus` 说明：手动维护仅 `AVAILABLE ↔ CLOSED`，转维修须先签退或走 `closeSeatForRepair`，契约依据升 v1.3；v1.3 按 Word 最终版同步实验时间；v1.2 为按 B 评审意见调整：新增 CreditScoreLog 与 CreditChangeReason，ReservationStatus 加 NO_SHOW，Reservation 时段字段拆分）
+> **文件作用**：实验3 报告（Markdown 版），供 GitHub 在线浏览与团队协作；Word 版为提交用的最终版，内容停留在定稿时点，本文为最新口径。
 > **撰写**：易雨杰（成员A，2024611209）　｜　**评审**：叶梅冰（成员B，2024611038）
 
 ## 实验基本信息
@@ -35,7 +35,7 @@
 - **StarUML 5.0（with cm）**：安装路径 `D:\StarUML`，用于本项目全部 UML 图的建模与导出，启动前需设置 Windows XP (Service Pack 2) 兼容模式。
 - **Git / GitHub**：版本控制与团队协作，主干 `main`，成员A（易雨杰）使用 `dev-A`，成员B（叶梅冰）使用 `dev-B-new`。
 - **IntelliJ IDEA + JDK 17 + Maven**：后续编码阶段使用（Maven Wrapper 已随仓库提供）。
-- **接口契约 v0.6**（`docs/contract/接口契约.md`）：本实验的业务字段、枚举取值、关键方法签名以契约为准，类图不另造名词。
+- **接口契约 v0.6**（`docs/contract/接口契约.md`）：本实验的业务字段、枚举取值、关键方法签名以契约为准，类图不另造名词。成稿基线为 v0.6；座位状态口径已按 v1.3 收紧，见（三）4 的 Seat 状态流转。
 
 ## 四、实验内容及实验数据记录
 
@@ -123,7 +123,7 @@
 |---|---|---|
 | User | login(): boolean | 校验用户名密码，返回是否登录成功 |
 | User | modifyInfo(): void | 修改本人资料 |
-| Seat | updateStatus(newStatus: SeatStatus): void | 更新座位状态；OCCUPIED 不得直接改 AVAILABLE，必须先签退 |
+| Seat | updateStatus(newStatus: SeatStatus): void | 更新座位状态；手动维护仅允许 AVAILABLE ↔ CLOSED，OCCUPIED / RESERVED 不得手动改任何状态，须先签退或走 `closeSeatForRepair` 编排 |
 | Reservation | cancel(): boolean | 主动取消预约，释放座位 |
 | Reservation | checkIn(): boolean | 值班管理员在前台执行签到登记，置为已签到（Study-F01 操作者为值班管理员，不是学生自助） |
 | Reservation | checkOut(): boolean | 值班管理员在前台执行签退登记，释放座位，判定是否超时并扣分 |
@@ -194,7 +194,7 @@
 - **属性**：seatId、roomName、seatNo、status。
 - **操作**：`updateStatus(newStatus: SeatStatus)` 更新座位状态，传入目标状态。
 - **关联**：与 SeatType 为 0..* : 1 聚合；与 Reservation 为 1 : 0..*；依赖 SeatStatus 枚举。
-- **状态流转**：AVAILABLE → RESERVED（预约成功）→ OCCUPIED（签到）→ AVAILABLE（签退释放）；任意状态 → CLOSED（转维修）；OCCUPIED 不得直接改为 AVAILABLE，必须先签退（契约 v0.6 约束）。
+- **状态流转**：AVAILABLE → RESERVED（预约成功）→ OCCUPIED（签到）；签退、取消、爽约后按该座位剩余有效预约重算汇总状态（仍有 BOOKED 则留 RESERVED，有 CHECKED_IN 则 OCCUPIED，否则回 AVAILABLE）；手动维护只允许 AVAILABLE ↔ CLOSED（转维修与维修完成），OCCUPIED、RESERVED 不得手动改任何状态，转维修须先签退或经 `closeSeatForRepair` 编排（契约 v1.3 约束）。
 - **支撑用例**：Study-C01、Study-C02、Study-F01、Study-F02、Study-M02。
 
 #### 5. Reservation（预约记录）
@@ -279,7 +279,7 @@
 
 ### （四）与契约的一致性核对
 
-类图中的 7 个业务类、4 个枚举，其属性名、关键方法名（`cancel` / `checkIn` / `checkOut` / `handleNoShow` / `updateStatus` / `login` / `modifyInfo`）、枚举取值，逐项对照 `docs/contract/接口契约.md` v0.6，未发现不一致。特别是 `handleNoShow` 将预约状态置为 `NO_SHOW` 并写 `CreditScoreLog`、`SeatStatus.OCCUPIED` 不可直接改 AVAILABLE 的状态约束，均已体现在类图与方法说明中。
+类图中的 7 个业务类、4 个枚举，其属性名、关键方法名（`cancel` / `checkIn` / `checkOut` / `handleNoShow` / `updateStatus` / `login` / `modifyInfo`）、枚举取值，逐项对照 `docs/contract/接口契约.md` v0.6，未发现不一致。特别是 `handleNoShow` 将预约状态置为 `NO_SHOW` 并写 `CreditScoreLog`、`SeatStatus.OCCUPIED` 不可直接改 AVAILABLE 的状态约束，均已体现在类图与方法说明中。契约升到 v1.3 后，座位状态矩阵收紧为「手动仅 AVAILABLE ↔ CLOSED、OCCUPIED 与 RESERVED 不得手动改」，本节（三）4 的 Seat 操作说明与状态流转已按 v1.3 同步更新，类图与契约仍然一致。
 
 ## 六、分工与评审说明
 
