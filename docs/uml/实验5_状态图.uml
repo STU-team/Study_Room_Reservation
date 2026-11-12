@@ -1005,7 +1005,7 @@
 <XPD:ATTR name="Top" type="integer">432</XPD:ATTR>
 <XPD:ATTR name="Width" type="integer">327</XPD:ATTR>
 <XPD:ATTR name="Height" type="integer">30</XPD:ATTR>
-<XPD:ATTR name="Text" type="string">契约v1.2：OCCUPIED不能直接转为AVAILABLE，必须先签退
+<XPD:ATTR name="Text" type="string">契约v1.3：手动仅AVAILABLE与CLOSED，OCCUPIED须先签退
 </XPD:ATTR>
 </XPD:OBJ>
 <XPD:OBJ name="OwnedViews[13]" type="UMLNoteLinkView" guid="QtwOZwIYV0Wv7iIujwQ4gwAA">
