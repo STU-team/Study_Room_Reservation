@@ -5,7 +5,7 @@
 > **仓库**：[STU-team/Study_Room_Reservation](https://github.com/STU-team/Study_Room_Reservation)（团队仓，本地 `origin`）｜ [yyj138/Study_Room_Reservation](https://github.com/yyj138/Study_Room_Reservation)（成员A 个人仓）
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
-> **当前版本**：v1.17（交卷前文档收尾：CIM-1 正文统一称「业务用例图」、实验8 提交明细补到 50 条、实验7 报告按实际更新、仓库地址补个人仓）
+> **当前版本**：v1.18（完成 B-6 演示视频提交，项目全部交付物完成）
 > **版本更新说明**：
 > - `v1.13`：交付 B-7（实验7 MDA 综合大报告）。
 > - `v1.14`：交付 B-6（UML 与运行截图汇总）及 B-8（个人任务与感想、交叉审查）。
@@ -146,4 +146,4 @@ Study_Room_Reservation/
 - [x] B→A 联调问题单：座位状态可被系统管理员绕过、签到缺座位校验、单值座位状态导致跨日期/时段不可复用；A 已确认并由 A-10 在契约 v1.3 落地（详见 `docs/contract/联调问题-B向A-座位状态流转与签到校验.md`）
 - [x] B-7 实验7 MDA 综合大报告：按 CIM-1→CIM-2→CIM-3→PIM-1→PIM-2→PIM-3→PIM-4 统稿排版，形成 Markdown 与同名 Word
 - [x] B-8 个人任务与感想、交叉审查 A 的图与报告：汇总 B-1～B-8 已完成任务索引；审查 A 侧实验1/3/5/8 报告与对应 UML 图，记录 A-01～A-04 四项差异，已由 A 在 PR #17 修订闭环。个人文档见 docs/reports/05_个人任务及感想-B.md（附录 B 含历史互审截图）。
-- [~] B-6 运行截图、UML 图汇总与 3~5 分钟演示视频：前两项已完成（PR #16 合入 `docs/assets/汇总/`），演示视频待录
+- [x]  B-6演示视频：前两项已完成，演示视频已录制并上传。观看链接：[B-6 演示视频（百度网盘）](https://pan.baidu.com/s/1Itp3TQGRIUVCwQ01hl2iJA) 提取码: 4jp4
