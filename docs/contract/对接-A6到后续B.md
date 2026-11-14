@@ -99,7 +99,7 @@ git switch dev-B-new
 git merge origin/dev-A
 ```
 
-合并完成后 `src/main/java/com/studyroom` 下应当有 `entity`、`dao`、`service`、`util` 四个包；先跑 `.\mvnw.cmd test`，应看到 38 个用例通过（`Tests run: 38, Failures: 0, Errors: 0`），再开始写界面。
+合并完成后 `src/main/java/com/studyroom` 下应当有 `entity`、`dao`、`service`、`util` 四个包；先跑 `.\mvnw.cmd test`，应看到 43 个用例通过（`Tests run: 43, Failures: 0, Errors: 0`），再开始写界面。
 
 ### 7.1 程序入口骨架
 
