@@ -2,10 +2,10 @@
 
 > **文件作用**：项目总览与开发入口说明，包含项目目标、目录结构、构建方式、文档索引与 Git 协同规范。
 > **课程**：CST9301 软件工程（汕头大学）
-> **仓库**：https://github.com/STU-team/Study_Room_Reservation（本地 `origin`）
+> **仓库**：https://github.com/STU-team/Study_Room_Reservation（团队仓，本地 `origin`）｜ https://github.com/yyj138/Study_Room_Reservation（成员A 个人仓）
 > **创建时间**：2026-10-23
 > **维护者**：易雨杰（成员A，架构与后端） / 叶梅冰（成员B，交互与前端）
-> **当前版本**：v1.15（A-8 联调收尾完成：10 项验收全部通过，集群证据入库；B-6 演示视频待录）
+> **当前版本**：v1.16（交卷前文档收尾：CIM-1 正文统一称「业务用例图」、实验8 报告 Word 提交明细同步到 40 条、实验7 报告按实际更新、仓库地址补个人仓）
 > **版本更新说明**：
 > - `v1.13`：交付 B-7（实验7 MDA 综合大报告）。
 > - `v1.14`：交付 B-6（UML 与运行截图汇总）及 B-8（个人任务与感想、交叉审查）。
@@ -130,7 +130,7 @@ Study_Room_Reservation/
 - [x] 接口契约 v0.6：新增 `CreditScoreLog` 信用分流水与 `ReservationStatus.NO_SHOW`；`CreditScoreLog.reservationId` 为 Long、`SeatType.seatCount` 为 `Integer{derived}`（CONTRACT-CHANGE）
 - [x] 接口契约 v0.7：第七节补 `CreditScoreLogDao`、`SeatTypeDao`，接口与第八节七张表一一对应（CONTRACT-CHANGE）
 - [x] 接口契约 v0.8：`reservations.csv` 补 `createTime` 列，`Reservation.createTime`（预约提交时间）保真可还原（CONTRACT-CHANGE）
-- [x] A-2 CIM-1 系统用例图（8 个用例、3 个参与者、系统边界）
+- [x] A-2 CIM-1 业务用例图（8 个用例、3 个参与者、系统边界；文件名沿用 `CIM1-系统用例图.uml`/`.jpg`，正文口径为「业务用例图」）
 - [x] A-2 CIM-2 "在线预约"活动图（学生/系统两泳道、判断与异常分支）
 - [x] A-3 总类图与类字典（7 个业务类 + 4 个枚举、6 条关联含 1 条聚合、4 条枚举依赖；含 CreditScoreLog 信用分流水与 ReservationStatus.NO_SHOW；StarUML 工程 `docs/uml/实验3_总类图.uml`，报告 md + docx，图见 `docs/assets/实验3_总类图.jpg`）
 - [x] A-4 状态图：座位状态图（AVAILABLE/RESERVED/OCCUPIED/CLOSED 四状态 + 三条转维修分支，签到登记从 RESERVED 出发）与预约记录状态图（BOOKED/CHECKED_IN/CHECKED_OUT/CANCELLED/NO_SHOW 五状态 + 三条出口）；StarUML 工程 `docs/uml/实验5_状态图.uml`，报告 md + docx，图见 `docs/assets/实验5_座位状态图.jpg`、`docs/assets/实验5_预约记录状态图.jpg`
